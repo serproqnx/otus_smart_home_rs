@@ -1,3 +1,12 @@
+struct Home {
+	name: &'static str,
+		
+}
+
+struct Room {
+	name: &'static str,
+}
+
 struct Socket {
     name: &'static str,
     about: &'static str,
@@ -19,6 +28,10 @@ trait SmartHomeUnit {
     fn turn_on_off(&mut self);
     fn get_about(&self) -> &'static str;
     fn is_on(&self) -> &'static str;
+}
+
+impl Home {
+	fn get_room_list(&self) -> 
 }
 
 impl Socket {
