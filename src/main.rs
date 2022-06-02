@@ -1,10 +1,13 @@
-struct Home {
-	name: &'static str,
-		
+use std::collections::HashMap;
+
+struct Home<'a, T> {
+  name: &'static str,
+  rooms: HashMap<&'a str, Room<'a, T>>,
 }
 
-struct Room {
-	name: &'static str,
+struct Room<'a, T> {
+  name: &'a str,
+  devices: HashMap<&'a str, T>, 
 }
 
 struct Socket {
@@ -30,8 +33,32 @@ trait SmartHomeUnit {
     fn is_on(&self) -> &'static str;
 }
 
-impl Home {
-	fn get_room_list(&self) -> 
+impl<'a, T> Home<'a, T> {
+    fn new (name: &'static str) -> Home<'a, T> {
+        Home {
+            name,
+            rooms: HashMap::new(),
+        }
+    }
+    
+    fn add_room(&mut self, name: &'static str) {
+        self.rooms.insert(name, Room { name, HashMap::new() } );
+    }
+
+    fn get_rooms_list(&self) {
+        for (_key, val) in self.rooms.iter()  {
+            println!("{}", val.name);
+        }
+    }
+}
+
+impl<'a, T> Room<'a, T> {
+    fn new (name: &'static str) -> Room<'a, T> {
+        Room { 
+            name, 
+            devices: HashMap::new(),
+        }
+    }
 }
 
 impl Socket {
@@ -123,6 +150,18 @@ impl SmartHomeUnit for Thermometer {
 // impl Thermometer {}
 
 fn main() {
+    let mut home_1: Home = Home::new("Home1");
+    println!("{}", home_1.name);
+    
+    home_1.add_room("bedroom1");
+    home_1.add_room("kitchen1");
+
+    home_1.get_rooms_list();
+
+    // let test = Home1.rooms["bedroom1"].name;
+    // println!("{}", test);
+    // Home1.get_room_list();
+
     let mut socket1: Socket = SmartHomeUnit::new("Socket1");
     socket1.get_about();
     socket1.turn_on_off();
