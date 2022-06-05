@@ -7,7 +7,7 @@ struct Home {
 
 struct Room {
   name: &'static str,
-  pub devices: HashMap<&'static str, Socket>, 
+  devices: HashMap<&'static str, Socket>, 
 }
 
 struct Socket {
@@ -67,6 +67,7 @@ impl Room {
     }
     
     fn add_device(&mut self, name: &'static str) {
+        // let mut unit =  SmartHomeUnit
         self.devices.insert(
             name,
             Socket { 
