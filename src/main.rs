@@ -99,8 +99,16 @@ impl Room {
     
     fn get_devices_list(&self) {
         // dbg!(self.devices)
-        for (_key, val) in self.devices.iter() {
-            println!("{:?}", val);
+        for (_key, device) in self.devices.iter() {
+            match &device {
+
+                SmartHomeUnitType::Socket( Socket { name, .. }
+                ) => { println!("{:?}", name) },
+
+                SmartHomeUnitType::Thermometer( Thermometer { name, .. }
+                ) => { println!("{:?}", name) },
+            }
+            // println!("{:?}", val);
         }
     }
 }
