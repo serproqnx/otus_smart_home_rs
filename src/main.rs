@@ -7,9 +7,11 @@ struct Home {
 
 struct Room {
   name: &'static str,
-  devices: HashMap<&'static str, Socket>, 
+  devices: HashMap<&'static str, SmartHomeUnitType>, 
 }
 
+
+#[derive(Debug)]
 struct Socket {
     name: &'static str,
     about: &'static str,
@@ -17,11 +19,18 @@ struct Socket {
     current_power_consumption: i32,
 }
 
+#[derive(Debug)]
 struct Thermometer {
     name: &'static str,
     about: &'static str,
     on_status: bool,
     current_temperature: i32,
+}
+
+#[derive(Debug)]
+enum SmartHomeUnitType {
+    Socket(Socket),
+    Thermometer(Thermometer),
 }
 
 trait SmartHomeUnit {
@@ -42,13 +51,7 @@ impl Home {
     }
     
     fn add_room(&mut self, name: &'static str) {
-        self.rooms.insert(
-            name,
-            Room { 
-                name, 
-                devices: HashMap::new() 
-            } 
-        );
+        self.rooms.insert(name, Room::new(name));
     }
 
     fn get_rooms_list(&self) {
@@ -66,22 +69,38 @@ impl Room {
         }
     }
     
-    fn add_device(&mut self, name: &'static str) {
+    fn add_device_socket(&mut self, name: &'static str) {
         // let mut unit =  SmartHomeUnit
         self.devices.insert(
-            name,
-            Socket { 
-                name, 
-                about: "about ",
-                on_status: false,
-                current_power_consumption: 0, 
-            } 
+            name, 
+            SmartHomeUnitType::Socket(
+                SmartHomeUnit::new(name)
+            )
+        );
+        // self.devices.insert(
+        //     name,
+        //     Socket { 
+        //         name, 
+        //         about: "about ",
+        //         on_status: false,
+        //         current_power_consumption: 0, 
+        //     } 
+        // );
+    }
+
+    fn add_device_thermometer(&mut self, name: &'static str) {
+        self.devices.insert(
+            name, 
+            SmartHomeUnitType::Thermometer(
+                SmartHomeUnit::new(name)
+            )
         );
     }
     
     fn get_devices_list(&self) {
+        // dbg!(self.devices)
         for (_key, val) in self.devices.iter() {
-            println!("{}", val.name);
+            println!("{:?}", val);
         }
     }
 }
@@ -195,12 +214,15 @@ fn main() {
     
     //и содержит названия нескольких устройств.
     println!("\nНазвания нескольких устройств: ");
-    home_1.rooms.get_mut("kitchen1").unwrap().add_device("Socket2");
-    home_1.rooms.get_mut("kitchen1").unwrap().add_device("Socket3");
+    home_1.rooms.get_mut("kitchen1").unwrap().add_device_socket("Socket2");
+    home_1.rooms.get_mut("kitchen1").unwrap().add_device_socket("Socket3");
+    
+    home_1.rooms.get_mut("kitchen1").unwrap().add_device_thermometer("Thermometer2");
+    home_1.rooms.get_mut("kitchen1").unwrap().add_device_thermometer("Thermometer3");
 
     // - Устройство имеет уникальное в рамках помещения имя.
     println!("\nУникальное имя устройства:");
-    println!("{}", home_1.rooms["kitchen1"].devices["Socket2"].name);
+    // println!("{}", home_1.rooms["kitchen1"].devices["Socket2"].name);
     
     // - Библиотека позволяет получать список устройств в помещении.
     println!("\nСписок устройств в помещении");
@@ -225,11 +247,12 @@ fn main() {
     // Home1.get_room_list();
 
     // let mut socket1: Socket = SmartHomeUnit::new("Socket1");
+    // dbg!(socket1);
     // socket1.get_about();
     // socket1.turn_on_off();
     // socket1.get_current_power_consumption();
 
-    // let mut thermometer1: Thermometer = SmartHomeUnit::new("Thermomenter1");
+    // let mut thermometer1: Thermometer = SmartHomeUnit::new("Thermometer1");
     // thermometer1.get_about();
     // thermometer1.turn_on_off();
     // thermometer1.get_current_temperature();
