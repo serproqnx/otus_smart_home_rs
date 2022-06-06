@@ -70,22 +70,10 @@ impl Room {
     }
     
     fn add_device_socket(&mut self, name: &'static str) {
-        // let mut unit =  SmartHomeUnit
-        self.devices.insert(
-            name, 
-            SmartHomeUnitType::Socket(
+        self.devices.insert(name,SmartHomeUnitType::Socket(
                 SmartHomeUnit::new(name)
             )
         );
-        // self.devices.insert(
-        //     name,
-        //     Socket { 
-        //         name, 
-        //         about: "about ",
-        //         on_status: false,
-        //         current_power_consumption: 0, 
-        //     } 
-        // );
     }
 
     fn add_device_thermometer(&mut self, name: &'static str) {
@@ -107,8 +95,8 @@ impl Room {
 
                 SmartHomeUnitType::Thermometer( Thermometer { name, .. }
                 ) => { println!("{:?}", name) },
+            
             }
-            // println!("{:?}", val);
         }
     }
 }
@@ -230,7 +218,7 @@ fn main() {
 
     // - Устройство имеет уникальное в рамках помещения имя.
     println!("\nУникальное имя устройства:");
-    // println!("{}", home_1.rooms["kitchen1"].devices["Socket2"].name);
+    // println!("{}", home_1.rooms["kitchen1"].devices["Socket2"].);
     
     // - Библиотека позволяет получать список устройств в помещении.
     println!("\nСписок устройств в помещении");
