@@ -42,6 +42,7 @@ trait SmartHomeUnit {
     fn is_on(&self) -> &'static str;
 }
 
+
 impl Home {
     fn new (name: &'static str) -> Home {
         Home {
@@ -187,6 +188,10 @@ impl SmartHomeUnit for Thermometer {
     }
 }
 
+fn get_report<R, D>(room: R, device: D) {
+    println!("REPORT ALL");
+}
+
 // impl Thermometer {}
 
 fn main() {
@@ -231,6 +236,12 @@ fn main() {
     //     данных о положении устройства в доме: имени комнаты и имени устройства. 
     //     Если устройство не найдено в источнике информации, то вместо текста о 
     //     состоянии вернуть сообщение об ошибке.
+    
+    let temp_device = &home_1.rooms["kitchen1"].devices["Socket2"];
+    let temp_room= &home_1.rooms["kitchen1"];
+
+    get_report(temp_room, temp_device);
+
     // - Привести пример типа, предоставляющего текстовую информацию об устройствах 
     //     в доме для составления отчёта. Шаблон для описания сущностей библиотеки: 
     //     https://gist.github.com/76dff7177f19ff7e802b1e121865afe4
