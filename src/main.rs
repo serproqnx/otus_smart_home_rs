@@ -188,8 +188,43 @@ impl SmartHomeUnit for Thermometer {
     }
 }
 
-fn get_report<R, D>(room: R, device: D) {
-    println!("REPORT ALL");
+
+fn get_report(device: &SmartHomeUnitType) {
+	println!("\nREPORT: \n");
+
+    match &device {
+				//name: "Socket2", 
+				// about: "about Socket", 
+				// on_status: false, 
+				// current_power_consumption: 0
+
+        SmartHomeUnitType::Socket( Socket { 
+					name, 
+					about, 
+					on_status,
+					current_power_consumption,
+				}
+        ) => { println!("Name: {}\nAbout: {}\nIs on: {}\nConsumption: {}", 
+					name, 
+					about, 
+					on_status, 
+					current_power_consumption,
+				) },
+
+        SmartHomeUnitType::Thermometer( Thermometer {
+					name, 
+					about, 
+					on_status, 
+					current_temperature,
+				}
+        ) => { println!("Name: {}\nAbout: {}\nIs on: {}\nTemperature: {}", 
+					name,
+					about,
+					on_status,
+					current_temperature,
+				) },
+
+    }
 }
 
 // impl Thermometer {}
@@ -237,10 +272,10 @@ fn main() {
     //     Если устройство не найдено в источнике информации, то вместо текста о 
     //     состоянии вернуть сообщение об ошибке.
     
-    let temp_device = &home_1.rooms["kitchen1"].devices["Socket2"];
-    let temp_room= &home_1.rooms["kitchen1"];
 
-    get_report(temp_room, temp_device);
+    get_report(&home_1.rooms["kitchen1"].devices["Socket2"]);
+		get_report(&home_1.rooms["kitchen1"].devices["Socket3"]);
+		get_report(&home_1.rooms["kitchen1"].devices["Thermometer3"])
 
     // - Привести пример типа, предоставляющего текстовую информацию об устройствах 
     //     в доме для составления отчёта. Шаблон для описания сущностей библиотеки: 
