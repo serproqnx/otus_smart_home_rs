@@ -1,18 +1,21 @@
-use std::fmt;
+// use std::fmt;
 use std::collections::HashMap;
 
+#[derive(Debug, Clone)]
 struct Home {
     name: &'static str,
     rooms: HashMap<&'static str, Room>,
 }
 
-#[derive(Debug)]
+// #[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Room {
     name: &'static str,
     devices: HashMap<&'static str, SmartHomeUnitType>,
 }
 
-#[derive(Debug)]
+// #[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Socket {
     name: &'static str,
     about: &'static str,
@@ -20,7 +23,8 @@ struct Socket {
     current_power_consumption: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
+// #[derive(Debug)]
 struct Thermometer {
     name: &'static str,
     about: &'static str,
@@ -28,7 +32,8 @@ struct Thermometer {
     current_temperature: i32,
 }
 
-#[derive(Debug)]
+// #[derive(Debug)]
+#[derive(Debug, Clone)]
 enum SmartHomeUnitType {
     Socket(Socket),
     Thermometer(Thermometer),
@@ -41,6 +46,10 @@ trait SmartHomeUnit {
     fn turn_on_off(&mut self);
     fn get_about(&self) -> &'static str;
     fn is_on(&self) -> &'static str;
+}
+
+trait ReportObj<'a> {
+    fn get_self(self) -> SmartHomeUnitType;
 }
 
 impl Home {
@@ -87,11 +96,11 @@ impl Room {
         for (_key, device) in self.devices.iter() {
             match &device {
                 SmartHomeUnitType::Socket(Socket { name, .. }) => {
-                    println!("{:?}", name)
+                    println!("{}", name)
                 }
 
                 SmartHomeUnitType::Thermometer(Thermometer { name, .. }) => {
-                    println!("{:?}", name)
+                    println!("{}", name)
                 }
             }
         }
@@ -185,9 +194,9 @@ impl SmartHomeUnit for Thermometer {
 }
 
 // fn get_report(device: &SmartHomeUnitType) {
-fn get_report<T: fmt::Debug>(device: T) {
+fn get_report<'a, T: /*fmt::Debug + */ReportObj<'a>>(device: T) {
     println!("\nREPORT: \n");
-		println!("{:?}", device);
+		// println!("{:?}", device);
 
     // match &device { 
 		// 	Some(Socket { 
@@ -203,7 +212,7 @@ fn get_report<T: fmt::Debug>(device: T) {
 		// 	}
 		// }
 
-    match &device {
+    match &device.get_self() {
 			
         SmartHomeUnitType::Socket(Socket {
             name,
@@ -232,6 +241,17 @@ fn get_report<T: fmt::Debug>(device: T) {
 }
 
 // impl Thermometer {}
+impl<'a> ReportObj<'a> for SmartHomeUnitType {
+    fn get_self(self) -> SmartHomeUnitType {
+        self.clone()
+    }
+}
+
+// impl ReportObj for Room {
+//     fn get_self(self) -> Room {
+//         self
+//     }
+// }
 
 fn main() {
     // Библиотека предоставляет структуру дома в комнатах которого расположены устройства.
@@ -292,27 +312,28 @@ fn main() {
     //     Если устройство не найдено в источнике информации, то вместо текста о
     //     состоянии вернуть сообщение об ошибке.
 
-    get_report(&home_1.rooms["kitchen1"].devices["Socket2"]);
-    get_report(&home_1.rooms["kitchen1"].devices["Socket3"]);
-    get_report(&home_1.rooms["kitchen1"].devices["Thermometer3"]);
-    // get_report(&home_1.rooms["kitchen1"]);
+    // get_report(&home_1.rooms.get_mut("kitchen1").unwrap().devices.get_mut("Socket2").unwrap());
+    get_report(home_1.rooms["kitchen1"].devices["Socket2"].clone());
+    get_report(home_1.rooms["kitchen1"].devices["Socket3"].clone());
+    get_report(home_1.rooms["kitchen1"].devices["Thermometer3"].clone());
+    // get_report(home_1.rooms["kitchen1"].clone());
 
     // - Привести пример типа, предоставляющего текстовую информацию об устройствах
     //     в доме для составления отчёта. Шаблон для описания сущностей библиотеки:
     //     https://gist.github.com/76dff7177f19ff7e802b1e121865afe4
 
     // let test = Home1.rooms["bedroom1"].name;
-    // println!("{}", test);
+    println!("\nDBG REPORT");
     // Home1.get_room_list();
 
-    // let mut socket1: Socket = SmartHomeUnit::new("Socket1");
+    let mut socket1: Socket = SmartHomeUnit::new("Socket1");
     // dbg!(socket1);
-    // socket1.get_about();
-    // socket1.turn_on_off();
-    // socket1.get_current_power_consumption();
+    socket1.get_about();
+    socket1.turn_on_off();
+    socket1.get_current_power_consumption();
 
-    // let mut thermometer1: Thermometer = SmartHomeUnit::new("Thermometer1");
-    // thermometer1.get_about();
-    // thermometer1.turn_on_off();
-    // thermometer1.get_current_temperature();
+    let mut thermometer1: Thermometer = SmartHomeUnit::new("Thermometer1");
+    thermometer1.get_about();
+    thermometer1.turn_on_off();
+    thermometer1.get_current_temperature();
 }
