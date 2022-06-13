@@ -48,9 +48,9 @@ trait SmartHomeUnit {
     fn is_on(&self) -> &'static str;
 }
 
-trait ReportObj<'a> {
-    fn get_self(self) -> SmartHomeUnitType;
-}
+// trait ReportObj {
+//     fn get_self(self) -> SmartHomeUnitType;
+// }
 
 impl Home {
     fn new(name: &'static str) -> Home {
@@ -194,25 +194,13 @@ impl SmartHomeUnit for Thermometer {
 }
 
 // fn get_report(device: &SmartHomeUnitType) {
-fn get_report<'a, T: /*fmt::Debug + */ReportObj<'a>>(device: T) {
-    println!("\nREPORT: \n");
+// fn get_report<T: fmt::Debug + ReportObj>(device: T) {
 		// println!("{:?}", device);
 
-    // match &device { 
-		// 	Some(Socket { 
-		// 		name, 
-		// 		about, 
-		// 		on_status, 
-		// 		current_power_consumption 
-		// 	}) => {
-    //         println!(
-    //             "Name: {}\nAbout: {}\nIs on: {}\nConsumption: {}",
-    //             name, about, on_status, current_power_consumption,
-    //         )
-		// 	}
-		// }
+fn get_enum_report(device: SmartHomeUnitType) {
+    println!("\nREPORT: \n");
 
-    match &device.get_self() {
+    match &device {
 			
         SmartHomeUnitType::Socket(Socket {
             name,
@@ -240,12 +228,12 @@ fn get_report<'a, T: /*fmt::Debug + */ReportObj<'a>>(device: T) {
     }
 }
 
-// impl Thermometer {}
-impl<'a> ReportObj<'a> for SmartHomeUnitType {
-    fn get_self(self) -> SmartHomeUnitType {
-        self.clone()
-    }
-}
+// // impl Thermometer {}
+// impl ReportObj for SmartHomeUnitType {
+//     fn get_self(self) -> SmartHomeUnitType {
+//         self.clone()
+//     }
+// }
 
 // impl ReportObj for Room {
 //     fn get_self(self) -> Room {
@@ -313,9 +301,9 @@ fn main() {
     //     состоянии вернуть сообщение об ошибке.
 
     // get_report(&home_1.rooms.get_mut("kitchen1").unwrap().devices.get_mut("Socket2").unwrap());
-    get_report(home_1.rooms["kitchen1"].devices["Socket2"].clone());
-    get_report(home_1.rooms["kitchen1"].devices["Socket3"].clone());
-    get_report(home_1.rooms["kitchen1"].devices["Thermometer3"].clone());
+    get_enum_report(home_1.rooms["kitchen1"].devices["Socket2"].clone());
+    // get_report(home_1.rooms["kitchen1"].devices["Socket3"].clone());
+    // get_report(home_1.rooms["kitchen1"].devices["Thermometer3"].clone());
     // get_report(home_1.rooms["kitchen1"].clone());
 
     // - Привести пример типа, предоставляющего текстовую информацию об устройствах
