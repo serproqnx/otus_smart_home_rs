@@ -197,7 +197,7 @@ impl SmartHomeUnit for Thermometer {
 // fn get_report<T: fmt::Debug + ReportObj>(device: T) {
 		// println!("{:?}", device);
 
-fn get_enum_report(device: SmartHomeUnitType) {
+fn get_enum_report(device: &SmartHomeUnitType) {
     println!("\nREPORT: \n");
 
     match &device {
@@ -299,19 +299,23 @@ fn main() {
     //     данных о положении устройства в доме: имени комнаты и имени устройства.
     //     Если устройство не найдено в источнике информации, то вместо текста о
     //     состоянии вернуть сообщение об ошибке.
-
+    println!("\nENUM REPORT: ");
     // get_report(&home_1.rooms.get_mut("kitchen1").unwrap().devices.get_mut("Socket2").unwrap());
-    get_enum_report(home_1.rooms["kitchen1"].devices["Socket2"].clone());
+    get_enum_report(&home_1.rooms["kitchen1"].devices["Socket2"]);
     // get_report(home_1.rooms["kitchen1"].devices["Socket3"].clone());
     // get_report(home_1.rooms["kitchen1"].devices["Thermometer3"].clone());
     // get_report(home_1.rooms["kitchen1"].clone());
+
+    println!("\nGENERIC REPORT: ");
+    // get_generic_report()
+
 
     // - Привести пример типа, предоставляющего текстовую информацию об устройствах
     //     в доме для составления отчёта. Шаблон для описания сущностей библиотеки:
     //     https://gist.github.com/76dff7177f19ff7e802b1e121865afe4
 
     // let test = Home1.rooms["bedroom1"].name;
-    println!("\nDBG REPORT");
+    println!("\nDBG REPORT: ");
     // Home1.get_room_list();
 
     let mut socket1: Socket = SmartHomeUnit::new("Socket1");
