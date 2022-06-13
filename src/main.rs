@@ -48,9 +48,17 @@ trait SmartHomeUnit {
     fn is_on(&self) -> &'static str;
 }
 
-// trait ReportObj {
-//     fn get_self(self) -> SmartHomeUnitType;
+// trait SocketReport {
+//     fn get_self(self) -> Socket;
 // }
+
+// trait ThermometerReport {
+//     fn get_self(self) -> Thermometer;
+// }
+
+trait ReportObj {
+    fn get_self(self) -> SmartHomeUnitType;
+}
 
 impl Home {
     fn new(name: &'static str) -> Home {
@@ -195,13 +203,12 @@ impl SmartHomeUnit for Thermometer {
 
 // fn get_report(device: &SmartHomeUnitType) {
 // fn get_report<T: fmt::Debug + ReportObj>(device: T) {
-		// println!("{:?}", device);
+// println!("{:?}", device);
 
 fn get_enum_report(device: &SmartHomeUnitType) {
     println!("\nREPORT: \n");
 
     match &device {
-			
         SmartHomeUnitType::Socket(Socket {
             name,
             about,
@@ -228,15 +235,78 @@ fn get_enum_report(device: &SmartHomeUnitType) {
     }
 }
 
-// // impl Thermometer {}
-// impl ReportObj for SmartHomeUnitType {
-//     fn get_self(self) -> SmartHomeUnitType {
-//         self.clone()
+impl ReportObj for SmartHomeUnitType {
+    fn get_self(self) -> SmartHomeUnitType {
+        self
+    }
+}
+// fn get_generic_report<T: std::fmt::Debug>(device: T) {
+//     dbg!(device);
+// fn get_generic_report<T: SmartHomeUnit>(device: T) {
+// fn get_generic_report<T>(device: T) {
+// fn get_generic_report<T: std::fmt::Debug + ReportObj>(device: T) {
+fn get_generic_report<T:ReportObj>(device: T) {
+    // dbg!(&device);
+    println!("\nGENERIC REPORT:");
+
+    // match &SocketReport::get_self(device) {
+    //     Socket { name, about, on_status, current_power_consumption } => println!("Socket"),
+    // }
+    match &device.get_self() {
+        SmartHomeUnitType::Socket(Socket {
+            name,
+            about,
+            on_status,
+            current_power_consumption,
+        }) => {
+            println!(
+                "Name: {}\nAbout: {}\nIs on: {}\nConsumption: {}",
+                name, about, on_status, current_power_consumption,
+            )
+        }
+
+        SmartHomeUnitType::Thermometer(Thermometer {
+            name,
+            about,
+            on_status,
+            current_temperature,
+        }) => {
+            println!(
+                "Name: {}\nAbout: {}\nIs on: {}\nTemperature: {}",
+                name, about, on_status, current_temperature,
+            )
+        }
+    }
+}
+
+// fn get_generic_report<T: SocketReport>(device: T) {
+//     println!("\nGENERIC REPORT");
+//     match &device.get_self() {
+//         Socket { name, about, on_status, current_power_consumption } => println!("Socket"),
 //     }
 // }
 
-// impl ReportObj for Room {
-//     fn get_self(self) -> Room {
+// // impl Thermometer {}
+// impl SocketReport for Socket {
+//     fn get_self(self) -> Socket {
+//         self
+//     }
+// }
+
+// impl ThermometerReport for Thermometer {
+//     fn get_self(self) -> Thermometer {
+//         self
+//     }
+// }
+
+// impl ThermometerReport  for SmartHomeUnitType {
+//     fn get_self(self) -> Thermometer {
+//         self
+//     }
+// }
+
+// impl SocketReport for SmartHomeUnitType {
+//     fn get_self(self) -> SmartHomeUnitType {
 //         self
 //     }
 // }
@@ -303,12 +373,13 @@ fn main() {
     // get_report(&home_1.rooms.get_mut("kitchen1").unwrap().devices.get_mut("Socket2").unwrap());
     get_enum_report(&home_1.rooms["kitchen1"].devices["Socket2"]);
     // get_report(home_1.rooms["kitchen1"].devices["Socket3"].clone());
-    // get_report(home_1.rooms["kitchen1"].devices["Thermometer3"].clone());
+    // get_report(home_1.rooms["kitchen1"].devices["Thermometer3"]);
     // get_report(home_1.rooms["kitchen1"].clone());
 
     println!("\nGENERIC REPORT: ");
-    // get_generic_report()
 
+    get_generic_report(home_1.rooms["kitchen1"].devices["Socket2"].clone());
+    // get_generic_report(home_1.rooms["kitchen1"].devices["Thermometer3"]);
 
     // - Привести пример типа, предоставляющего текстовую информацию об устройствах
     //     в доме для составления отчёта. Шаблон для описания сущностей библиотеки:
