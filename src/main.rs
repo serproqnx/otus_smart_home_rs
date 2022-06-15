@@ -48,17 +48,11 @@ trait SmartHomeUnit {
     fn is_on(&self) -> &'static str;
 }
 
-// trait SocketReport {
-//     fn get_self(self) -> Socket;
-// }
-
-// trait ThermometerReport {
-//     fn get_self(self) -> Thermometer;
-// }
 
 trait ReportObj {
     fn get_self(self) -> SmartHomeUnitType;
 }
+
 
 impl Home {
     fn new(name: &'static str) -> Home {
@@ -240,18 +234,18 @@ impl ReportObj for SmartHomeUnitType {
         self
     }
 }
+
 // fn get_generic_report<T: std::fmt::Debug>(device: T) {
 //     dbg!(device);
 // fn get_generic_report<T: SmartHomeUnit>(device: T) {
 // fn get_generic_report<T>(device: T) {
-// fn get_generic_report<T: std::fmt::Debug + ReportObj>(device: T) {
-fn get_generic_report<T:ReportObj>(device: T) {
-    // dbg!(&device);
+fn get_generic_report<T: std::fmt::Debug + ReportObj>(device: T) {
+// fn get_generic_report<T:ReportObj>(device: T) {
+    dbg!(&device);
     println!("\nGENERIC REPORT:");
 
-    // match &SocketReport::get_self(device) {
-    //     Socket { name, about, on_status, current_power_consumption } => println!("Socket"),
-    // }
+			
+
     match &device.get_self() {
         SmartHomeUnitType::Socket(Socket {
             name,
@@ -279,37 +273,6 @@ fn get_generic_report<T:ReportObj>(device: T) {
     }
 }
 
-// fn get_generic_report<T: SocketReport>(device: T) {
-//     println!("\nGENERIC REPORT");
-//     match &device.get_self() {
-//         Socket { name, about, on_status, current_power_consumption } => println!("Socket"),
-//     }
-// }
-
-// // impl Thermometer {}
-// impl SocketReport for Socket {
-//     fn get_self(self) -> Socket {
-//         self
-//     }
-// }
-
-// impl ThermometerReport for Thermometer {
-//     fn get_self(self) -> Thermometer {
-//         self
-//     }
-// }
-
-// impl ThermometerReport  for SmartHomeUnitType {
-//     fn get_self(self) -> Thermometer {
-//         self
-//     }
-// }
-
-// impl SocketReport for SmartHomeUnitType {
-//     fn get_self(self) -> SmartHomeUnitType {
-//         self
-//     }
-// }
 
 fn main() {
     // Библиотека предоставляет структуру дома в комнатах которого расположены устройства.
@@ -379,7 +342,7 @@ fn main() {
     println!("\nGENERIC REPORT: ");
 
     get_generic_report(home_1.rooms["kitchen1"].devices["Socket2"].clone());
-    // get_generic_report(home_1.rooms["kitchen1"].devices["Thermometer3"]);
+    get_generic_report(home_1.rooms["kitchen1"].devices["Thermometer3"].clone());
 
     // - Привести пример типа, предоставляющего текстовую информацию об устройствах
     //     в доме для составления отчёта. Шаблон для описания сущностей библиотеки:
