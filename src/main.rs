@@ -1,17 +1,18 @@
 // use std::fmt;
 use std::collections::HashMap;
+// use std::fmt::Display;
 
-#[derive(Debug, Clone)]
+// #[derive(Debug, Clone)]
 struct Home {
     name: &'static str,
     rooms: HashMap<&'static str, Room>,
 }
 
 // #[derive(Debug)]
-#[derive(Debug, Clone)]
+// #[derive(Debug, Clone)]
 struct Room {
     name: &'static str,
-    devices: HashMap<&'static str, SmartHomeUnitType>,
+    devices: HashMap<&'static str, Box<dyn SmartHomeUnit>>,
 }
 
 // #[derive(Debug)]
@@ -40,7 +41,7 @@ enum SmartHomeUnitType {
 }
 
 trait SmartHomeUnit {
-    fn new(name: &'static str) -> Self;
+    // fn new(name: &'static str) -> Self;
     fn name(&self) -> &'static str;
     fn on_status(&self) -> bool;
     fn turn_on_off(&mut self);
@@ -82,29 +83,45 @@ impl Room {
     }
 
     fn add_device_socket(&mut self, name: &'static str) {
+				let new_socket = Thermometer {
+            name,
+            on_status: false,
+            about: "about Thermometer",
+            current_temperature: 20,
+        };
         self.devices
-            .insert(name, SmartHomeUnitType::Socket(SmartHomeUnit::new(name)));
+            .insert(
+							 name, 
+							 Box::new(new_socket));
     }
 
     fn add_device_thermometer(&mut self, name: &'static str) {
+				let new_therm = Socket {
+            name,
+            on_status: false,
+            about: "about Socket",
+            current_power_consumption: 0,
+        };
+				
         self.devices.insert(
             name,
-            SmartHomeUnitType::Thermometer(SmartHomeUnit::new(name)),
+            Box::new(new_therm),
         );
     }
 
     fn get_devices_list(&self) {
         // dbg!(self.devices)
         for (_key, device) in self.devices.iter() {
-            match &device {
-                SmartHomeUnitType::Socket(Socket { name, .. }) => {
-                    println!("{}", name)
-                }
+						println!("{}", device);
+            // match *device {								
+						// 		Socket { name, .. } => {
+            //         println!("{}", name)
+            //     }
 
-                SmartHomeUnitType::Thermometer(Thermometer { name, .. }) => {
-                    println!("{}", name)
-                }
-            }
+            //     SmartHomeUnitType::Thermometer(Thermometer { name, .. }) => {
+            //         println!("{}", name)
+            //     }
+            // }
         }
     }
 }
@@ -132,14 +149,14 @@ impl Thermometer {
 }
 
 impl SmartHomeUnit for Socket {
-    fn new(name: &'static str) -> Socket {
-        Socket {
-            name,
-            on_status: false,
-            about: "about Socket",
-            current_power_consumption: 0,
-        }
-    }
+    // fn new(name: &'static str) -> Socket {
+    //     Socket {
+    //         name,
+    //         on_status: false,
+    //         about: "about Socket",
+    //         current_power_consumption: 0,
+    //     }
+    // }
 
     fn get_about(&self) -> &'static str {
         println!("{}", self.about);
@@ -164,14 +181,14 @@ impl SmartHomeUnit for Socket {
 }
 
 impl SmartHomeUnit for Thermometer {
-    fn new(name: &'static str) -> Thermometer {
-        Thermometer {
-            name,
-            on_status: false,
-            about: "about Thermometer",
-            current_temperature: 20,
-        }
-    }
+    // fn new(name: &'static str) -> Thermometer {
+    //     Thermometer {
+    //         name,
+    //         on_status: false,
+    //         about: "about Thermometer",
+    //         current_temperature: 20,
+    //     }
+    // }
 
     fn get_about(&self) -> &'static str {
         println!("{}", self.about);
