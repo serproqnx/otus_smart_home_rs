@@ -47,11 +47,12 @@ trait SmartHomeUnit {
     fn turn_on_off(&mut self);
     fn get_about(&self) -> &'static str;
     fn is_on(&self) -> &'static str;
+		fn get_custom_fields(&self);
 }
 
 
-trait ReportObj {
-    fn get_self(self) -> SmartHomeUnitType;
+trait Report {
+    fn report(self) -> String;
 }
 
 
@@ -111,8 +112,11 @@ impl Room {
 
     fn get_devices_list(&self) {
         // dbg!(self.devices)
+				println!("\nСписок устройств в помещении {} :", self.name);
         for (_key, device) in self.devices.iter() {
-						println!("{}", device);
+						// dbg!(device.name());
+						println!("{}", device.name());
+						device.get_custom_fields();
             // match *device {								
 						// 		Socket { name, .. } => {
             //         println!("{}", name)
@@ -158,6 +162,10 @@ impl SmartHomeUnit for Socket {
     //     }
     // }
 
+		fn get_custom_fields(&self) {
+				println!("{}", self.get_current_power_consumption());
+		}
+
     fn get_about(&self) -> &'static str {
         println!("{}", self.about);
         self.about
@@ -189,6 +197,9 @@ impl SmartHomeUnit for Thermometer {
     //         current_temperature: 20,
     //     }
     // }
+		fn get_custom_fields(&self) {
+				println!("{}", self.get_current_temperature());
+		}
 
     fn get_about(&self) -> &'static str {
         println!("{}", self.about);
@@ -246,48 +257,48 @@ fn get_enum_report(device: &SmartHomeUnitType) {
     }
 }
 
-impl ReportObj for SmartHomeUnitType {
-    fn get_self(self) -> SmartHomeUnitType {
-        self
-    }
-}
+// impl Report for SmartHomeUnitType {
+//     fn get_self(self) -> SmartHomeUnitType {
+//         self
+//     }
+// }
 
 // fn get_generic_report<T: std::fmt::Debug>(device: T) {
 //     dbg!(device);
 // fn get_generic_report<T: SmartHomeUnit>(device: T) {
 // fn get_generic_report<T>(device: T) {
-fn get_generic_report<T: std::fmt::Debug + ReportObj>(device: T) {
+fn get_generic_report<T: std::fmt::Debug + Report>(device: T) {
 // fn get_generic_report<T:ReportObj>(device: T) {
     dbg!(&device);
     println!("\nGENERIC REPORT:");
 
 			
 
-    match &device.get_self() {
-        SmartHomeUnitType::Socket(Socket {
-            name,
-            about,
-            on_status,
-            current_power_consumption,
-        }) => {
-            println!(
-                "Name: {}\nAbout: {}\nIs on: {}\nConsumption: {}",
-                name, about, on_status, current_power_consumption,
-            )
-        }
+    // match &device.get_self() {
+    //     SmartHomeUnitType::Socket(Socket {
+    //         name,
+    //         about,
+    //         on_status,
+    //         current_power_consumption,
+    //     }) => {
+    //         println!(
+    //             "Name: {}\nAbout: {}\nIs on: {}\nConsumption: {}",
+    //             name, about, on_status, current_power_consumption,
+    //         )
+    //     }
 
-        SmartHomeUnitType::Thermometer(Thermometer {
-            name,
-            about,
-            on_status,
-            current_temperature,
-        }) => {
-            println!(
-                "Name: {}\nAbout: {}\nIs on: {}\nTemperature: {}",
-                name, about, on_status, current_temperature,
-            )
-        }
-    }
+    //     SmartHomeUnitType::Thermometer(Thermometer {
+    //         name,
+    //         about,
+    //         on_status,
+    //         current_temperature,
+    //     }) => {
+    //         println!(
+    //             "Name: {}\nAbout: {}\nIs on: {}\nTemperature: {}",
+    //             name, about, on_status, current_temperature,
+    //         )
+    //     }
+    // }
 }
 
 
@@ -339,8 +350,9 @@ fn main() {
     // println!("{}", home_1.rooms["kitchen1"].devices["Socket2"].);
 
     // - Библиотека позволяет получать список устройств в помещении.
-    println!("\nСписок устройств в помещении");
+    // println!("\nСписок устройств в помещении");
     home_1.rooms["kitchen1"].get_devices_list();
+    home_1.rooms["bedroom1"].get_devices_list();
 
     // - Библиотека имеет функцию, возвращающую текстовый отчёт о состоянии дома.
     //     Эта функция принимает в качестве аргумента обобщённый тип, позволяющий
@@ -351,15 +363,15 @@ fn main() {
     //     состоянии вернуть сообщение об ошибке.
     println!("\nENUM REPORT: ");
     // get_report(&home_1.rooms.get_mut("kitchen1").unwrap().devices.get_mut("Socket2").unwrap());
-    get_enum_report(&home_1.rooms["kitchen1"].devices["Socket2"]);
+    // get_enum_report(&home_1.rooms["kitchen1"].devices["Socket2"]);
     // get_report(home_1.rooms["kitchen1"].devices["Socket3"].clone());
     // get_report(home_1.rooms["kitchen1"].devices["Thermometer3"]);
     // get_report(home_1.rooms["kitchen1"].clone());
 
     println!("\nGENERIC REPORT: ");
 
-    get_generic_report(home_1.rooms["kitchen1"].devices["Socket2"].clone());
-    get_generic_report(home_1.rooms["kitchen1"].devices["Thermometer3"].clone());
+    // get_generic_report(home_1.rooms["kitchen1"].devices["Socket2"].clone());
+    // get_generic_report(home_1.rooms["kitchen1"].devices["Thermometer3"].clone());
 
     // - Привести пример типа, предоставляющего текстовую информацию об устройствах
     //     в доме для составления отчёта. Шаблон для описания сущностей библиотеки:
@@ -369,14 +381,14 @@ fn main() {
     println!("\nDBG REPORT: ");
     // Home1.get_room_list();
 
-    let mut socket1: Socket = SmartHomeUnit::new("Socket1");
-    // dbg!(socket1);
-    socket1.get_about();
-    socket1.turn_on_off();
-    socket1.get_current_power_consumption();
+    // let mut socket1: Socket = SmartHomeUnit::new("Socket1");
+    // // dbg!(socket1);
+    // socket1.get_about();
+    // socket1.turn_on_off();
+    // socket1.get_current_power_consumption();
 
-    let mut thermometer1: Thermometer = SmartHomeUnit::new("Thermometer1");
-    thermometer1.get_about();
-    thermometer1.turn_on_off();
-    thermometer1.get_current_temperature();
+    // let mut thermometer1: Thermometer = SmartHomeUnit::new("Thermometer1");
+    // thermometer1.get_about();
+    // thermometer1.turn_on_off();
+    // thermometer1.get_current_temperature();
 }
