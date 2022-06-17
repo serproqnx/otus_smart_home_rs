@@ -178,7 +178,8 @@ impl SmartHomeUnit for Thermometer {
     }
 }
 
-fn get_report(device: &Box<dyn SmartHomeUnit>) {
+// fn get_report(device: &Box<dyn SmartHomeUnit>) {
+fn get_report(device: &dyn SmartHomeUnit) {
     device.get_device_report();
 }
 
@@ -244,8 +245,8 @@ fn main() {
 
     println!("\nREPORT: ");
 
-    get_report(&home_1.rooms["kitchen1"].devices["Socket2"]);
-    get_report(&home_1.rooms["kitchen1"].devices["Thermometer3"]);
+    get_report(home_1.rooms["kitchen1"].devices["Socket2"].as_ref());
+    get_report(home_1.rooms["kitchen1"].devices["Thermometer3"].as_ref());
 
     // - Привести пример типа, предоставляющего текстовую информацию об устройствах
     //     в доме для составления отчёта. Шаблон для описания сущностей библиотеки:
