@@ -33,28 +33,15 @@ struct Thermometer {
     current_temperature: i32,
 }
 
-// #[derive(Debug)]
-#[derive(Debug, Clone)]
-enum SmartHomeUnitType {
-    Socket(Socket),
-    Thermometer(Thermometer),
-}
-
 trait SmartHomeUnit {
     // fn new(name: &'static str) -> Self;
-    fn name(&self) -> &'static str;
+    fn get_name(&self) -> &'static str;
     fn on_status(&self) -> bool;
     fn turn_on_off(&mut self);
     fn get_about(&self) -> &'static str;
     fn is_on(&self) -> &'static str;
-		fn get_custom_fields(&self);
+    fn get_device_report(&self);
 }
-
-
-trait Report {
-    fn report(self) -> String;
-}
-
 
 impl Home {
     fn new(name: &'static str) -> Home {
@@ -84,90 +71,59 @@ impl Room {
     }
 
     fn add_device_socket(&mut self, name: &'static str) {
-				let new_socket = Thermometer {
+        let new_socket = Thermometer {
             name,
             on_status: false,
             about: "about Thermometer",
             current_temperature: 20,
         };
-        self.devices
-            .insert(
-							 name, 
-							 Box::new(new_socket));
+        self.devices.insert(name, Box::new(new_socket));
     }
 
     fn add_device_thermometer(&mut self, name: &'static str) {
-				let new_therm = Socket {
+        let new_therm = Socket {
             name,
             on_status: false,
             about: "about Socket",
             current_power_consumption: 0,
         };
-				
-        self.devices.insert(
-            name,
-            Box::new(new_therm),
-        );
+
+        self.devices.insert(name, Box::new(new_therm));
     }
 
     fn get_devices_list(&self) {
-        // dbg!(self.devices)
-				println!("\nСписок устройств в помещении {} :", self.name);
+        println!("\nСписок устройств в помещении {} :", self.name);
         for (_key, device) in self.devices.iter() {
-						// dbg!(device.name());
-						println!("{}", device.name());
-						device.get_custom_fields();
-            // match *device {								
-						// 		Socket { name, .. } => {
-            //         println!("{}", name)
-            //     }
-
-            //     SmartHomeUnitType::Thermometer(Thermometer { name, .. }) => {
-            //         println!("{}", name)
-            //     }
-            // }
+            println!("{}", device.get_name());
+            // device.get_device_report();
         }
     }
 }
 
 impl Socket {
     fn get_current_power_consumption(&self) -> i32 {
-        println!(
-            "Current power consumption of {} is {}",
-            self.name, self.current_power_consumption,
-        );
-
         self.current_power_consumption
     }
 }
 
 impl Thermometer {
     fn get_current_temperature(&self) -> i32 {
-        println!(
-            "Current temperature of {} is {}",
-            self.name, self.current_temperature,
-        );
-
         self.current_temperature
     }
 }
 
 impl SmartHomeUnit for Socket {
-    // fn new(name: &'static str) -> Socket {
-    //     Socket {
-    //         name,
-    //         on_status: false,
-    //         about: "about Socket",
-    //         current_power_consumption: 0,
-    //     }
-    // }
-
-		fn get_custom_fields(&self) {
-				println!("{}", self.get_current_power_consumption());
-		}
+    fn get_device_report(&self) {
+        println!(
+            "\nName: {}\nAbout: {}\nPower: {}\nCurrent power consumption: {}\n",
+            self.get_name(),
+            self.get_about(),
+            self.is_on(),
+            self.get_current_power_consumption(),
+        );
+    }
 
     fn get_about(&self) -> &'static str {
-        println!("{}", self.about);
         self.about
     }
 
@@ -175,7 +131,7 @@ impl SmartHomeUnit for Socket {
         (if self.on_status() { "ON" } else { "OFF" }) as _
     }
 
-    fn name(&self) -> &'static str {
+    fn get_name(&self) -> &'static str {
         self.name
     }
     fn on_status(&self) -> bool {
@@ -189,20 +145,18 @@ impl SmartHomeUnit for Socket {
 }
 
 impl SmartHomeUnit for Thermometer {
-    // fn new(name: &'static str) -> Thermometer {
-    //     Thermometer {
-    //         name,
-    //         on_status: false,
-    //         about: "about Thermometer",
-    //         current_temperature: 20,
-    //     }
-    // }
-		fn get_custom_fields(&self) {
-				println!("{}", self.get_current_temperature());
-		}
+    fn get_device_report(&self) {
+        println!(
+            "\nName: {}\nAbout: {}\nPower: {}\nTemperature: {}\n",
+            self.get_name(),
+            self.get_about(),
+            self.is_on(),
+            self.get_current_temperature(),
+        );
+    }
 
     fn get_about(&self) -> &'static str {
-        println!("{}", self.about);
+        // println!("{}", self.about);
         self.about
     }
 
@@ -210,9 +164,10 @@ impl SmartHomeUnit for Thermometer {
         (if self.on_status() { "ON" } else { "OFF" }) as _
     }
 
-    fn name(&self) -> &'static str {
+    fn get_name(&self) -> &'static str {
         self.name
     }
+
     fn on_status(&self) -> bool {
         self.on_status
     }
@@ -223,84 +178,9 @@ impl SmartHomeUnit for Thermometer {
     }
 }
 
-// fn get_report(device: &SmartHomeUnitType) {
-// fn get_report<T: fmt::Debug + ReportObj>(device: T) {
-// println!("{:?}", device);
-
-fn get_enum_report(device: &SmartHomeUnitType) {
-    println!("\nREPORT: \n");
-
-    match &device {
-        SmartHomeUnitType::Socket(Socket {
-            name,
-            about,
-            on_status,
-            current_power_consumption,
-        }) => {
-            println!(
-                "Name: {}\nAbout: {}\nIs on: {}\nConsumption: {}",
-                name, about, on_status, current_power_consumption,
-            )
-        }
-
-        SmartHomeUnitType::Thermometer(Thermometer {
-            name,
-            about,
-            on_status,
-            current_temperature,
-        }) => {
-            println!(
-                "Name: {}\nAbout: {}\nIs on: {}\nTemperature: {}",
-                name, about, on_status, current_temperature,
-            )
-        }
-    }
+fn get_report(device: &Box<dyn SmartHomeUnit>) {
+    device.get_device_report();
 }
-
-// impl Report for SmartHomeUnitType {
-//     fn get_self(self) -> SmartHomeUnitType {
-//         self
-//     }
-// }
-
-// fn get_generic_report<T: std::fmt::Debug>(device: T) {
-//     dbg!(device);
-// fn get_generic_report<T: SmartHomeUnit>(device: T) {
-// fn get_generic_report<T>(device: T) {
-fn get_generic_report<T: std::fmt::Debug + Report>(device: T) {
-// fn get_generic_report<T:ReportObj>(device: T) {
-    dbg!(&device);
-    println!("\nGENERIC REPORT:");
-
-			
-
-    // match &device.get_self() {
-    //     SmartHomeUnitType::Socket(Socket {
-    //         name,
-    //         about,
-    //         on_status,
-    //         current_power_consumption,
-    //     }) => {
-    //         println!(
-    //             "Name: {}\nAbout: {}\nIs on: {}\nConsumption: {}",
-    //             name, about, on_status, current_power_consumption,
-    //         )
-    //     }
-
-    //     SmartHomeUnitType::Thermometer(Thermometer {
-    //         name,
-    //         about,
-    //         on_status,
-    //         current_temperature,
-    //     }) => {
-    //         println!(
-    //             "Name: {}\nAbout: {}\nIs on: {}\nTemperature: {}",
-    //             name, about, on_status, current_temperature,
-    //         )
-    //     }
-    // }
-}
-
 
 fn main() {
     // Библиотека предоставляет структуру дома в комнатах которого расположены устройства.
@@ -361,34 +241,13 @@ fn main() {
     //     данных о положении устройства в доме: имени комнаты и имени устройства.
     //     Если устройство не найдено в источнике информации, то вместо текста о
     //     состоянии вернуть сообщение об ошибке.
-    println!("\nENUM REPORT: ");
-    // get_report(&home_1.rooms.get_mut("kitchen1").unwrap().devices.get_mut("Socket2").unwrap());
-    // get_enum_report(&home_1.rooms["kitchen1"].devices["Socket2"]);
-    // get_report(home_1.rooms["kitchen1"].devices["Socket3"].clone());
-    // get_report(home_1.rooms["kitchen1"].devices["Thermometer3"]);
-    // get_report(home_1.rooms["kitchen1"].clone());
 
-    println!("\nGENERIC REPORT: ");
+    println!("\nREPORT: ");
 
-    // get_generic_report(home_1.rooms["kitchen1"].devices["Socket2"].clone());
-    // get_generic_report(home_1.rooms["kitchen1"].devices["Thermometer3"].clone());
+    get_report(&home_1.rooms["kitchen1"].devices["Socket2"]);
+    get_report(&home_1.rooms["kitchen1"].devices["Thermometer3"]);
 
     // - Привести пример типа, предоставляющего текстовую информацию об устройствах
     //     в доме для составления отчёта. Шаблон для описания сущностей библиотеки:
     //     https://gist.github.com/76dff7177f19ff7e802b1e121865afe4
-
-    // let test = Home1.rooms["bedroom1"].name;
-    println!("\nDBG REPORT: ");
-    // Home1.get_room_list();
-
-    // let mut socket1: Socket = SmartHomeUnit::new("Socket1");
-    // // dbg!(socket1);
-    // socket1.get_about();
-    // socket1.turn_on_off();
-    // socket1.get_current_power_consumption();
-
-    // let mut thermometer1: Thermometer = SmartHomeUnit::new("Thermometer1");
-    // thermometer1.get_about();
-    // thermometer1.turn_on_off();
-    // thermometer1.get_current_temperature();
 }
