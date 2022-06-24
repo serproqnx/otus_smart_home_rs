@@ -2,7 +2,11 @@ use std::collections::HashMap;
 
 pub mod unit;
 
-use crate::home::room::unit::{socket::Socket, thermometer::Thermometer, SmartHomeUnit};
+use crate::home::room::unit::{
+	socket::Socket, 
+	thermometer::Thermometer, 
+	SmartHomeUnit
+};
 
 pub struct Room {
   pub name: &'static str,
