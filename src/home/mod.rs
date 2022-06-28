@@ -29,25 +29,22 @@ impl Home {
 
 #[cfg(test)]
 mod tests {
-	use super::*;
+  use super::*;
 
-	#[test]
-	fn create_home() {
-		let mut home1 = Home {
-			name: "Home1",
-			rooms: HashMap::new(),
-		};
+  #[test]
+  fn create_home() {
+    let mut home1 = Home {
+      name: "Home1",
+      rooms: HashMap::new(),
+    };
 
-		assert_eq!(home1.name, "Home1");
-		assert_eq!(home1.rooms.is_empty(), true);
+    assert_eq!(home1.name, "Home1");
+    assert_eq!(home1.rooms.is_empty(), true);
 
-		home1.add_room("Room1");
-		home1.add_room("Room2");
+    home1.add_room("Room1");
+    home1.add_room("Room2");
 
-		assert_eq!(home1.rooms["Room1"].name, "Room1");
-		assert_eq!(home1.rooms["Room1"].devices.is_empty(), true);
-
-		
-
-	}
+    assert_eq!(home1.rooms["Room1"].name, "Room1");
+    assert_eq!(home1.rooms["Room1"].devices.is_empty(), true);
+  }
 }
