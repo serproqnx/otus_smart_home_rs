@@ -1,5 +1,5 @@
-mod home;
-use home::{
+
+use ::home::{
 	room::unit::SmartHomeUnit, 
 	room::Room, 
 	Home
@@ -40,7 +40,6 @@ fn main() {
     .get_mut("kitchen1")
     .unwrap()
     .add_device_socket("Socket3");
-
   home_1
     .rooms
     .get_mut("kitchen1")

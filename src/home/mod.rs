@@ -20,10 +20,11 @@ impl Home {
     self.rooms.insert(name, Room::new(name));
   }
 
-  pub fn get_rooms_list(&self) {
+  pub fn get_rooms_list(&self) -> &HashMap<&str, Room> {
     for (_key, val) in self.rooms.iter() {
       println!("{}", val.name);
     }
+		&self.rooms
   }
 }
 
@@ -46,5 +47,16 @@ mod tests {
 
     assert_eq!(home1.rooms["Room1"].name, "Room1");
     assert_eq!(home1.rooms["Room1"].devices.is_empty(), true);
+
+		let hashmap = home1.get_rooms_list();
+
+    for (key, device) in hashmap.iter() {
+      match key {
+        &"Room1" => assert_eq!(device.name, "Room1"),
+        &"Room2" => assert_eq!(device.name, "Room2"),
+        _ => assert_eq!(true, false),
+      }
+    }
+
   }
 }
