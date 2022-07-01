@@ -24,7 +24,7 @@ impl Home {
     for (_key, val) in self.rooms.iter() {
       println!("{}", val.name);
     }
-		&self.rooms
+    &self.rooms
   }
 }
 
@@ -48,7 +48,7 @@ mod tests {
     assert_eq!(home1.rooms["Room1"].name, "Room1");
     assert_eq!(home1.rooms["Room1"].devices.is_empty(), true);
 
-		let hashmap = home1.get_rooms_list();
+    let hashmap = home1.get_rooms_list();
 
     for (key, device) in hashmap.iter() {
       match key {
@@ -57,6 +57,5 @@ mod tests {
         _ => assert_eq!(true, false),
       }
     }
-
   }
 }

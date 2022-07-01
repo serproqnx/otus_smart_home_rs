@@ -1,9 +1,4 @@
-
-use ::home::{
-	room::unit::SmartHomeUnit, 
-	room::Room, 
-	Home
-};
+use smart_home_lib::home::{room::unit::SmartHomeUnit, room::Room, Home};
 
 fn get_report(device: &dyn SmartHomeUnit) {
   device.get_device_report();
