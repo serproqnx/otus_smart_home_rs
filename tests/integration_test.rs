@@ -1,20 +1,20 @@
+
 use smart_home_lib::home::{
 	home::Home, 
 	room::unit::unit::SmartHomeUnit
 };
 
-fn get_report(device: &dyn SmartHomeUnit) {
-  device.get_device_report();
-}
+#[test]
 
-fn main() {
-  // Библиотека предоставляет структуру дома в комнатах которого расположены устройства.
-  // - Дом имеет название и содержит несколько помещений.
-  println!("Дом имеет название и содержит несколько помещений.");
+fn it_adds_two() {
   let mut home_1: Home = Home::new("Home1");
+
+	assert_eq!(home_1.name, "Home1");
 
   home_1.add_room("bedroom1");
   home_1.add_room("kitchen1");
+
+	assert_eq!(home_1.name, )
 
   println!("{}", home_1.name);
 

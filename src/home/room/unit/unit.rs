@@ -1,7 +1,10 @@
-pub mod socket;
-pub mod thermometer;
+// pub mod socket;
+// pub mod thermometer;
 
-use crate::home::room::unit::{socket::Socket, thermometer::Thermometer};
+use crate::home::room::unit::{
+	socket::Socket, 
+	thermometer::Thermometer
+};
 
 pub trait SmartHomeUnit {
   // fn new(name: &'static str) -> Self;

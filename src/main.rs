@@ -1,10 +1,9 @@
 // pub mod home;
+use smart_home_lib::home::{
+	// room::unit::unit::SmartHomeUnit, 
+	home::Home
+};
 
-use smart_home_lib::home::{room::unit::SmartHomeUnit, Home};
-
-fn get_report(device: &dyn SmartHomeUnit) {
-  device.get_device_report();
-}
 
 fn main() {
   // Библиотека предоставляет структуру дома в комнатах которого расположены устройства.
@@ -68,8 +67,8 @@ fn main() {
 
   println!("\nREPORT: ");
 
-  get_report(home_1.rooms["kitchen1"].devices["Socket2"].as_ref());
-  get_report(home_1.rooms["kitchen1"].devices["Thermometer3"].as_ref());
+  home_1.get_report(home_1.rooms["kitchen1"].devices["Socket2"].as_ref());
+  home_1.get_report(home_1.rooms["kitchen1"].devices["Thermometer3"].as_ref());
 
   // - Привести пример типа, предоставляющего текстовую информацию об устройствах
   //     в доме для составления отчёта. Шаблон для описания сущностей библиотеки:

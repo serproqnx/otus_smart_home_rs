@@ -1,5 +1,5 @@
 #[derive(Debug, Clone)]
-// #[derive(Debug)]
+
 pub struct Thermometer {
   pub name: &'static str,
   pub about: &'static str,
