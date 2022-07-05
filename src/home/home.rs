@@ -1,9 +1,6 @@
 // pub mod room;
 
-use crate::home::room::{
-	room::Room,
-	unit::unit::SmartHomeUnit
-};
+use crate::home::room::{room::Room, unit::unit::SmartHomeUnit};
 
 use std::collections::HashMap;
 
@@ -31,9 +28,9 @@ impl Home {
     &self.rooms
   }
 
-	pub fn get_report(&self, device: &dyn SmartHomeUnit) {
-  	device.get_device_report();
-	}
+  pub fn get_report(&self, device: &dyn SmartHomeUnit) -> String {
+    device.get_device_report()
+  }
 }
 
 #[cfg(test)]

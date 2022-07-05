@@ -1,9 +1,5 @@
 // pub mod home;
-use smart_home_lib::home::{
-	// room::unit::unit::SmartHomeUnit, 
-	home::Home
-};
-
+use smart_home_lib::home::home::Home;
 
 fn main() {
   // Библиотека предоставляет структуру дома в комнатах которого расположены устройства.

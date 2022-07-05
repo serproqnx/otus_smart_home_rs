@@ -1,2 +1,2 @@
-pub mod room;
 pub mod home;
+pub mod room;

@@ -1,10 +1,6 @@
 use std::collections::HashMap;
 
-use crate::home::room::unit::{
-	socket::Socket, 
-	thermometer::Thermometer, 
-	unit::SmartHomeUnit
-};
+use crate::home::room::unit::{socket::Socket, thermometer::Thermometer, unit::SmartHomeUnit};
 
 pub struct Room {
   pub name: &'static str,
@@ -97,7 +93,7 @@ mod tests {
       match key {
         &"Socket1" => assert_eq!(device.get_name(), "Socket1"),
         &"Thermometer1" => assert_eq!(device.get_name(), "Thermometer1"),
-        _ => assert_eq!(true, false),
+        _ => assert!(false),
       }
     }
   }
