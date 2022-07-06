@@ -70,7 +70,7 @@ mod tests {
     assert_eq!(socket1.get_on_status(), "OFF");
 
     assert_eq!(
-      socket1.get_device_report(),
+      socket1.get_device_report().unwrap(),
       "\nName: Socket1\nAbout: about Socket\nPower: OFF\nCurrent power consumption: 0\n",
     );
 
@@ -83,7 +83,7 @@ mod tests {
     assert_eq!(thermometer1.get_on_status(), "OFF");
 
     assert_eq!(
-      thermometer1.get_device_report(),
+      thermometer1.get_device_report().unwrap(),
       "\nName: Thermometer1\nAbout: about Thermometer\nPower: OFF\nTemperature: 20\n",
     );
 

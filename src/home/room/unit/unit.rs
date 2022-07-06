@@ -10,11 +10,11 @@ pub trait SmartHomeUnit {
   fn turn_on_off(&mut self);
   fn get_about(&self) -> &'static str;
   fn get_on_status(&self) -> &'static str;
-  fn get_device_report(&self) -> String;
+  fn get_device_report(&self) -> Option<String>;
 }
 
 impl SmartHomeUnit for Socket {
-  fn get_device_report(&self) -> String {
+  fn get_device_report(&self) -> Option<String> {
     let report = format!(
       "\nName: {}\nAbout: {}\nPower: {}\nCurrent power consumption: {}\n",
       self.get_name(),
@@ -23,7 +23,7 @@ impl SmartHomeUnit for Socket {
       self.get_current_power_consumption(),
     );
     println!("{}", report);
-    report
+    Some(report)
   }
 
   fn get_about(&self) -> &'static str {
@@ -53,7 +53,7 @@ impl SmartHomeUnit for Socket {
 }
 
 impl SmartHomeUnit for Thermometer {
-  fn get_device_report(&self) -> String {
+  fn get_device_report(&self) -> Option<String> {
     let report = format!(
       "\nName: {}\nAbout: {}\nPower: {}\nTemperature: {}\n",
       self.get_name(),
@@ -62,7 +62,7 @@ impl SmartHomeUnit for Thermometer {
       self.get_current_temperature(),
     );
     println!("{}", report);
-    report
+    Some(report)
   }
 
   fn get_about(&self) -> &'static str {
@@ -118,7 +118,7 @@ mod tests {
     assert_eq!(new_socket.get_on_status(), "OFF");
 
     assert_eq!(
-      new_socket.get_device_report(),
+      new_socket.get_device_report().unwrap(),
       "\nName: 1\nAbout: 1\nPower: OFF\nCurrent power consumption: 1\n",
     );
   }
@@ -144,7 +144,7 @@ mod tests {
     assert_eq!(new_therm.get_on_status(), "OFF");
 
     assert_eq!(
-      new_therm.get_device_report(),
+      new_therm.get_device_report().unwrap(),
       "\nName: 1\nAbout: 1\nPower: OFF\nTemperature: 1\n",
     );
   }

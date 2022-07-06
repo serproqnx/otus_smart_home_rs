@@ -29,7 +29,13 @@ impl Home {
   }
 
   pub fn get_report(&self, device: &dyn SmartHomeUnit) -> String {
-    device.get_device_report()
+		match device.get_device_report() {
+			None => {
+				println!("None");
+				"None".to_string()
+			},
+			Some(x) => x,
+		}
   }
 }
 
