@@ -1,6 +1,6 @@
 // pub mod room;
 
-use crate::home::room::{room::Room, unit::unit::SmartHomeUnit};
+use crate::homes::rooms::{room::Room, units::unit::SmartHomeUnit};
 
 use std::collections::HashMap;
 
@@ -29,13 +29,13 @@ impl Home {
   }
 
   pub fn get_report(&self, device: &dyn SmartHomeUnit) -> String {
-		match device.get_device_report() {
-			None => {
-				println!("None");
-				"None".to_string()
-			},
-			Some(x) => x,
-		}
+    match device.get_device_report() {
+      None => {
+        println!("None");
+        "None".to_string()
+      }
+      Some(x) => x,
+    }
   }
 }
 

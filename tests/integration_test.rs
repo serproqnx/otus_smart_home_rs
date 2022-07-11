@@ -1,6 +1,6 @@
-use smart_home_lib::home::{
+use smart_home_lib::homes::{
   home::Home,
-  room::room::Room,
+  rooms::room::Room,
   // room::unit::unit::SmartHomeUnit
 };
 
