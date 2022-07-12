@@ -27,7 +27,7 @@ mod tests {
 
     assert_eq!(test_socket.name, "1");
     assert_eq!(test_socket.about, "1");
-    assert_eq!(test_socket.on_status, true);
+    assert!(test_socket.on_status);
     assert_eq!(test_socket.current_power_consumption, 21);
     assert_eq!(test_socket.get_current_power_consumption(), 21);
   }

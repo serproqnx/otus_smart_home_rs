@@ -55,7 +55,7 @@ fn it_works() {
         assert_eq!(room.name, "kitchen1");
         check_units_in_the_room(room);
       }
-      _ => assert!(false),
+      _ => panic!(),
     }
   }
 
@@ -76,7 +76,7 @@ fn it_works() {
         "Thermometer3" => {
           assert_eq!(u, "Thermometer3");
         }
-        _ => assert!(false),
+        _ => panic!(),
       }
     }
   }

@@ -51,20 +51,20 @@ mod tests {
     };
 
     assert_eq!(home1.name, "Home1");
-    assert_eq!(home1.rooms.is_empty(), true);
+    assert!(home1.rooms.is_empty());
 
     home1.add_room("Room1");
     home1.add_room("Room2");
 
     assert_eq!(home1.rooms["Room1"].name, "Room1");
-    assert_eq!(home1.rooms["Room1"].devices.is_empty(), true);
+    assert!(home1.rooms["Room1"].devices.is_empty());
 
     let hashmap = home1.get_rooms_list();
 
     for (key, device) in hashmap.iter() {
-      match key {
-        &"Room1" => assert_eq!(device.name, "Room1"),
-        &"Room2" => assert_eq!(device.name, "Room2"),
+      match *key {
+        "Room1" => assert_eq!(device.name, "Room1"),
+        "Room2" => assert_eq!(device.name, "Room2"),
         _ => assert_eq!(true, false),
       }
     }

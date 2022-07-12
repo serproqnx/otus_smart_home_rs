@@ -106,12 +106,12 @@ mod tests {
     };
 
     assert_eq!(new_socket.name, "1");
-    assert_eq!(new_socket.on_status, true);
+    assert!(new_socket.on_status);
     assert_eq!(new_socket.about, "1");
     assert_eq!(new_socket.current_power_consumption, 1);
 
     assert_eq!(new_socket.get_name(), "1");
-    assert_eq!(new_socket.get_bool_on_status(), true);
+    assert!(new_socket.get_bool_on_status());
 
     assert_eq!(new_socket.get_on_status(), "ON");
     new_socket.turn_on_off();
@@ -132,12 +132,12 @@ mod tests {
       current_temperature: 1,
     };
     assert_eq!(new_therm.name, "1");
-    assert_eq!(new_therm.on_status, true);
+    assert!(new_therm.on_status);
     assert_eq!(new_therm.about, "1");
     assert_eq!(new_therm.current_temperature, 1);
 
     assert_eq!(new_therm.get_name(), "1");
-    assert_eq!(new_therm.get_bool_on_status(), true);
+    assert!(new_therm.get_bool_on_status());
 
     assert_eq!(new_therm.get_on_status(), "ON");
     new_therm.turn_on_off();

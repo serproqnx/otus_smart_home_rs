@@ -28,7 +28,7 @@ mod tests {
 
     assert_eq!(thermometer1.name, "1");
     assert_eq!(thermometer1.about, "1");
-    assert_eq!(thermometer1.on_status, true);
+    assert!(thermometer1.on_status);
     assert_eq!(thermometer1.current_temperature, 21);
     assert_eq!(thermometer1.get_current_temperature(), 21);
   }

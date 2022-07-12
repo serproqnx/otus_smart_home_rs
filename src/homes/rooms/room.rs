@@ -59,14 +59,14 @@ mod tests {
     };
 
     assert_eq!(new_room.name, "Room1");
-    assert_eq!(new_room.devices.is_empty(), true);
+    assert!(new_room.devices.is_empty());
 
     new_room.add_device_socket("Socket1");
     let socket1 = &new_room.devices["Socket1"];
 
     assert_eq!(socket1.get_name(), "Socket1");
     assert_eq!(socket1.get_about(), "about Socket");
-    assert_eq!(socket1.get_bool_on_status(), false);
+    assert!(!socket1.get_bool_on_status());
     assert_eq!(socket1.get_on_status(), "OFF");
 
     assert_eq!(
@@ -79,7 +79,7 @@ mod tests {
 
     assert_eq!(thermometer1.get_name(), "Thermometer1");
     assert_eq!(thermometer1.get_about(), "about Thermometer");
-    assert_eq!(thermometer1.get_bool_on_status(), false);
+    assert!(!thermometer1.get_bool_on_status());
     assert_eq!(thermometer1.get_on_status(), "OFF");
 
     assert_eq!(
@@ -90,10 +90,10 @@ mod tests {
     let hashmap = new_room.get_devices_list();
 
     for (key, device) in hashmap.iter() {
-      match key {
-        &"Socket1" => assert_eq!(device.get_name(), "Socket1"),
-        &"Thermometer1" => assert_eq!(device.get_name(), "Thermometer1"),
-        _ => assert!(false),
+      match *key {
+        "Socket1" => assert_eq!(device.get_name(), "Socket1"),
+        "Thermometer1" => assert_eq!(device.get_name(), "Thermometer1"),
+        _ => panic!(),
       }
     }
   }
