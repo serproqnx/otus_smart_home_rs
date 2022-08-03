@@ -81,6 +81,25 @@ fn it_works() {
     }
   }
 
+  // Библиотека позволяет добавлять и удалять устройства
+    
+  home_1
+    .rooms
+    .get_mut("kitchen1")
+    .unwrap()
+    .add_device_thermometer("Delition_test");
+ 
+  let deletion_result = home_1
+    .rooms
+    .get_mut("kitchen1")
+    .unwrap()
+    .del_device("Deletion_test")
+    .unwrap()
+    .get_name();
+    
+  assert_eq!(deletion_result, "Deletion_test");
+  
+
   // - Библиотека имеет функцию, возвращающую текстовый отчёт о состоянии дома.
   //     Эта функция принимает в качестве аргумента обобщённый тип, позволяющий
   //     получить текстовую информацию о состоянии устройства, для включения в отчёт.

@@ -9,7 +9,6 @@ fn main() {
 
   home_1.add_room("bedroom1");
   home_1.add_room("kitchen1");
-
   println!("{}", home_1.name);
 
   // - Библиотека позволяет запросить список помещений в доме.

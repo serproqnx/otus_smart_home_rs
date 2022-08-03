@@ -15,6 +15,10 @@ impl Room {
     }
   }
 
+  pub fn del_device(&mut self, name: &'static str) -> Option<Box<dyn SmartHomeUnit>> {
+    self.devices.remove(name)
+  }
+
   pub fn add_device_thermometer(&mut self, name: &'static str) {
     let new_thermometer = Thermometer {
       name,
