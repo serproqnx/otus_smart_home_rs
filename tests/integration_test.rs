@@ -13,6 +13,11 @@ fn it_works() {
 
   home_1.add_room("bedroom1");
   home_1.add_room("kitchen1");
+ 
+  home_1.add_room("born_to_be_deleted");
+  assert_eq!(home_1.rooms["born_to_be_deleted"].name, "born_to_be_deleted");
+  home_1.del_room("born_to_be_deleted");
+  assert_eq!(home_1.rooms["born_to_be_deleted"].name, "born_to_be_deleted");
 
   assert_eq!(home_1.rooms["bedroom1"].name, "bedroom1");
   assert_eq!(home_1.rooms["kitchen1"].name, "kitchen1");

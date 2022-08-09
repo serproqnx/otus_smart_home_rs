@@ -21,6 +21,17 @@ impl Home {
     self.rooms.insert(name, Room::new(name));
   }
 
+  pub fn del_room(&mut self, name: &'static str) -> Option<Room> {
+    self.rooms.remove(name)
+  }
+
+  pub fn get_room(&self, name: &'static str) -> Option<Room> {
+    for (_key, val) in self.rooms.iter() {
+     todo!() 
+    }
+    &self.rooms
+  }
+
   pub fn get_rooms_list(&self) -> &HashMap<&str, Room> {
     for (_key, val) in self.rooms.iter() {
       println!("{}", val.name);
