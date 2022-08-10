@@ -17,7 +17,7 @@ fn it_works() {
   home_1.add_room("born_to_be_deleted");
   assert_eq!(home_1.rooms["born_to_be_deleted"].name, "born_to_be_deleted");
   home_1.del_room("born_to_be_deleted");
-  assert_eq!(home_1.rooms["born_to_be_deleted"].name, "born_to_be_deleted");
+  assert!(!home_1.rooms.contains_key("born_to_be_deleted"));
 
   assert_eq!(home_1.rooms["bedroom1"].name, "bedroom1");
   assert_eq!(home_1.rooms["kitchen1"].name, "kitchen1");
@@ -92,17 +92,27 @@ fn it_works() {
     .rooms
     .get_mut("kitchen1")
     .unwrap()
-    .add_device_thermometer("Delition_test");
- 
-  let deletion_result = home_1
+    .add_device_thermometer("delete");
+
+  assert!(home_1.rooms["kitchen1"].devices.contains_key("delete"));
+
+  home_1
     .rooms
     .get_mut("kitchen1")
     .unwrap()
-    .del_device("Deletion_test")
-    .unwrap()
-    .get_name();
-    
-  assert_eq!(deletion_result, "Deletion_test");
+    .del_device("delete");
+
+  assert!(!home_1.rooms["kitchen1"].devices.contains_key("delete"));
+
+ // let deletion_result = home_1
+//    .rooms
+//    .get_mut("kitchen1")
+//    .unwrap()
+//    .del_device("Deletion_test")
+//    .unwrap()
+//    .get_name();
+//    
+//  assert_eq!(deletion_result, "Deletion_test");
   
 
   // - Библиотека имеет функцию, возвращающую текстовый отчёт о состоянии дома.

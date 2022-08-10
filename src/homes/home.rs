@@ -25,11 +25,8 @@ impl Home {
     self.rooms.remove(name)
   }
 
-  pub fn get_room(&self, name: &'static str) -> Option<Room> {
-    for (_key, val) in self.rooms.iter() {
-     todo!() 
-    }
-    &self.rooms
+  pub fn get_room(&self, name: &'static str) -> Option<&Room> {
+    Some(&self.rooms[name])
   }
 
   pub fn get_rooms_list(&self) -> &HashMap<&str, Room> {
@@ -67,6 +64,11 @@ mod tests {
     home1.add_room("Room1");
     home1.add_room("Room2");
 
+    home1.add_room("delete");
+    assert_eq!(home1.rooms["delete"].name, "delete");
+    home1.del_room("delete");
+    assert!(!home1.rooms.contains_key("delete"));
+
     assert_eq!(home1.rooms["Room1"].name, "Room1");
     assert!(home1.rooms["Room1"].devices.is_empty());
 
@@ -76,7 +78,7 @@ mod tests {
       match *key {
         "Room1" => assert_eq!(device.name, "Room1"),
         "Room2" => assert_eq!(device.name, "Room2"),
-        _ => assert_eq!(true, false),
+        _ => panic!("Этого тут быть не должно: {}", device.name),
       }
     }
   }
