@@ -1,22 +1,5 @@
-[package]
-name = "smart_home"
-default-run = "smart_home_bin"
-version = "0.1.0"
-edition = "2021"
+[workspace]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-
-
-[[bin]]
-name = "smart_home_bin"
-path = "src/main.rs"
-
-[lib]
-name = "smart_home_lib"
-path = "src/lib.rs"
-
-[[example]]
-name = "simple"
-path = "examples/simple.rs"
+members = [
+	"smart_home"
+]
