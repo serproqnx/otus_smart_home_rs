@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, net::{SocketAddrV4, Ipv4Addr}};
 
 use crate::homes::rooms::units::{
     socket::Socket, 
@@ -29,6 +29,7 @@ impl Room {
       on_status: false,
       about: "about Thermometer",
       current_temperature: 20,
+      ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
     self.devices.insert(name, Box::new(new_thermometer));
   }
@@ -39,6 +40,7 @@ impl Room {
       on_status: false,
       about: "about Socket",
       current_power_consumption: 0,
+      ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8182),
     };
 
     self.devices.insert(name, Box::new(new_socket));

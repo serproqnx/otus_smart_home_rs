@@ -1,3 +1,5 @@
+use std::net::SocketAddrV4;
+
 #[derive(Debug, Clone)]
 
 pub struct Thermometer {
@@ -5,6 +7,7 @@ pub struct Thermometer {
   pub about: &'static str,
   pub on_status: bool,
   pub current_temperature: i32,
+  pub ip: SocketAddrV4,
 }
 
 impl Thermometer {
@@ -15,6 +18,8 @@ impl Thermometer {
 
 #[cfg(test)]
 mod tests {
+
+  use std::net::{SocketAddrV4, Ipv4Addr};
   use super::Thermometer;
 
   #[test]
@@ -24,6 +29,7 @@ mod tests {
       about: "1",
       on_status: true,
       current_temperature: 21,
+      ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
 
     assert_eq!(thermometer1.name, "1");

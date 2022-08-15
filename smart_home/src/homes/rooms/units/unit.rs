@@ -1,6 +1,8 @@
 // pub mod socket;
 // pub mod thermometer;
 
+use std::net::TcpStream;
+
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 
 pub trait SmartHomeUnit {
@@ -11,6 +13,7 @@ pub trait SmartHomeUnit {
   fn get_about(&self) -> &'static str;
   fn get_on_status(&self) -> &'static str;
   fn get_device_report(&self) -> Option<String>;
+  fn connect(&self) -> std::io::Result<()>;
 }
 
 impl SmartHomeUnit for Socket {
@@ -25,6 +28,11 @@ impl SmartHomeUnit for Socket {
     println!("{}", report);
     Some(report)
   }
+
+  fn connect(&self) -> std::io::Result<()> {
+    let mut stream = TcpStream::connect()?;
+    Ok(()) 
+  } 
 
   fn get_about(&self) -> &'static str {
     self.about
@@ -96,6 +104,7 @@ impl SmartHomeUnit for Thermometer {
 mod tests {
   use super::*;
 
+  use std::net::{SocketAddrV4, Ipv4Addr};
   #[test]
   fn create_smarthomeunit_socket() {
     let mut new_socket = Socket {
@@ -103,6 +112,7 @@ mod tests {
       on_status: true,
       about: "1",
       current_power_consumption: 1,
+      ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
 
     assert_eq!(new_socket.name, "1");
@@ -130,6 +140,7 @@ mod tests {
       on_status: true,
       about: "1",
       current_temperature: 1,
+      ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
     assert_eq!(new_therm.name, "1");
     assert!(new_therm.on_status);

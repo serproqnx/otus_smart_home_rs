@@ -1,9 +1,12 @@
+use std::net::SocketAddrV4;
+
 #[derive(Debug, Clone)]
 pub struct Socket {
   pub name: &'static str,
   pub about: &'static str,
   pub on_status: bool,
   pub current_power_consumption: i32,
+  pub ip: SocketAddrV4,
 }
 
 impl Socket {
@@ -14,6 +17,8 @@ impl Socket {
 
 #[cfg(test)]
 mod tests {
+  use std::net::Ipv4Addr;
+
   use super::*;
 
   #[test]
@@ -23,7 +28,13 @@ mod tests {
       about: "1",
       on_status: true,
       current_power_consumption: 21,
+      ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8182),
     };
+
+
+    assert_eq!("127.0.0.1:8182".parse(), Ok(test_socket.ip));
+    assert_eq!(test_socket.ip.ip(), &Ipv4Addr::new(127, 0, 0, 1));
+    assert_eq!(test_socket.ip.port(), 8182);
 
     assert_eq!(test_socket.name, "1");
     assert_eq!(test_socket.about, "1");
