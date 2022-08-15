@@ -30,7 +30,7 @@ impl SmartHomeUnit for Socket {
   }
 
   fn connect(&self) -> std::io::Result<()> {
-    let mut stream = TcpStream::connect()?;
+    let mut stream = TcpStream::connect(self.ip)?;
     Ok(()) 
   } 
 
@@ -72,6 +72,11 @@ impl SmartHomeUnit for Thermometer {
     println!("{}", report);
     Some(report)
   }
+
+  fn connect(&self) -> std::io::Result<()> {
+    let mut stream = TcpStream::connect(self.ip)?;
+    Ok(()) 
+  } 
 
   fn get_about(&self) -> &'static str {
     // println!("{}", self.about);
@@ -142,6 +147,9 @@ mod tests {
       current_temperature: 1,
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
+
+    new_therm.connect();
+
     assert_eq!(new_therm.name, "1");
     assert!(new_therm.on_status);
     assert_eq!(new_therm.about, "1");
