@@ -1,6 +1,7 @@
 // pub mod socket;
 // pub mod thermometer;
 
+use std::io::prelude::*;
 use std::net::TcpStream;
 
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
@@ -31,6 +32,10 @@ impl SmartHomeUnit for Socket {
 
   fn connect(&self) -> std::io::Result<()> {
     let mut stream = TcpStream::connect(self.ip)?;
+    let msg = b"str from client"; 
+    stream.write(msg)?;
+    stream.read(&mut [0; 128])?;
+    
     Ok(()) 
   } 
 
