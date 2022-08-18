@@ -32,10 +32,13 @@ impl SmartHomeUnit for Socket {
 
   fn connect(&self) -> std::io::Result<()> {
     let mut stream = TcpStream::connect(self.ip)?;
-    let msg = b"str from client"; 
+    let msg = b"turnOn"; 
     stream.write(msg)?;
-    stream.read(&mut [0; 128])?;
-    
+
+    println!("STREAM.WRITE: {:?}", msg);
+    let mut device_response = [0; 512];
+    stream.read(&mut device_response)?;
+    println!("Response: {}", String::from_utf8_lossy(&device_response[..]));
     Ok(()) 
   } 
 
