@@ -18,18 +18,16 @@ impl Socket {
 fn handle_client(mut stream: TcpStream) {
 
     let mut buffer = [0; 512];
-    let mut response = b"Response from server";
-    
+    let response = b"Response from server";
 
     stream.read(&mut buffer).unwrap();
     
-    let command = String::from_utf8_lossy(&buffer[..]);
 
-    match command.into_owned().as_str() {
-       "turnOn" => stream.write(b"TurnOn"),
+    match String::from_utf8_lossy(&buffer[..]).to_string().as_str() {
+       "turnOn" => stream.write(b"turnOn"),
        "turnOff" => stream.write(b"Turn Off"),
        "get_report" => stream.write(b"REPORT"),
-       _ => stream.write(b"ERROR"),
+       _ => stream.write(b"ERR"),
     };
 
     println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
