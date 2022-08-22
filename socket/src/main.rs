@@ -17,26 +17,30 @@ impl Socket {
 
 fn handle_client(mut stream: TcpStream) {
 
-    let mut buffer = [0; 512];
-    let response = b"Response from server";
+    let mut buffer = [0; 4];
 
-    stream.read(&mut buffer).unwrap();
-    
+    stream.read_exact(&mut buffer).unwrap();
+    let len = u32::from_be_bytes(buffer);
 
-    match String::from_utf8_lossy(&buffer[..]).to_string().as_str() {
-       "turnOn" => stream.write(b"turnOn"),
-       "turnOff" => stream.write(b"Turn Off"),
-       "get_report" => stream.write(b"REPORT"),
-       _ => stream.write(b"ERR"),
+    let mut buffer = vec![0; len as _];
+
+    stream.read_exact(&mut buffer).unwrap();
+
+    match &buffer[..] {
+       b"turnOn" => stream.write_all(b"turnOn"),
+       b"turnOff" => stream.write_all(b"turnOff"),
+       b"report" => stream.write_all(b"report"),
+       _ => stream.write_all(b"ERR"),
     };
 
     println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
 
-    stream.write(response);
+    // stream.write(response);
 
 }
 
 fn main() -> Result<()> {
+
     let test_socket: Socket = Socket {
       name: "Socket1",
       about: "Real Socket 1",
@@ -46,10 +50,10 @@ fn main() -> Result<()> {
     };
 
     let listener = TcpListener::bind(test_socket.ip)?;
-
     // accept connections and process them serially
     for stream in listener.incoming() {
         handle_client(stream?);
     }
+
     Ok(())
 }
