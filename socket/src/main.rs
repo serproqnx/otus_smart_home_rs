@@ -17,27 +17,41 @@ impl Socket {
 
 fn handle_client(mut stream: TcpStream) {
 
-    let mut buffer = [0; 4];
+  // Request
 
-    stream.read_exact(&mut buffer).unwrap();
-    let len = u32::from_be_bytes(buffer);
+  let mut request = [0; 4];
+  stream.read_exact(&mut request).unwrap();
+  let req_len = u32::from_be_bytes(request);
 
-    let mut buffer = vec![0; len as _];
+  let mut request = vec![0; req_len as _];
+  stream.read_exact(&mut request).unwrap();
+  
+  // Response 
 
-    stream.read_exact(&mut buffer).unwrap();
+  stream.read_exact(&mut response);
 
-    match &buffer[..] {
-       b"turnOn" => stream.write_all(b"turnOn"),
-       b"turnOff" => stream.write_all(b"turnOff"),
-       b"report" => stream.write_all(b"report"),
-       _ => stream.write_all(b"ERR"),
-    };
+  let mut data = "empty";
+   
+  match &request[..] {
+    b"turnOn" => &mut data = b"turnOn",
+    // b"turnOn" => stream.write_all(turn_on()),
+    b"turnOff" => &mut data = b"turnOff",
+    b"report" => &mut data = b"report",
+    _ => &mut data = b"ERR",
+  };
 
-    println!("Request: {}", String::from_utf8_lossy(&buffer[..]));
+  let bytes = data.as_bytes(); 
+  let len = bytes.len() as u32;
+  let len_bytes = len.to_be_bytes();
+  stream.write_all(&len_bytes);
 
-    // stream.write(response);
-
+  println!("Request: {}", String::from_utf8_lossy(&request[..]));
 }
+
+fn turn_on() -> &'static [u8; 6] { b"turnOn" }
+
+//fn turn_off(stream: TcpStream) {}
+//fn get_report(stream: TcpStream) {}
 
 fn main() -> Result<()> {
 

@@ -14,5 +14,6 @@ fn main() {
   home_1
     .rooms["kitchen1"]
     .devices["s1"]
-    .connect();
+    .connect()
+    .unwrap();
 }
