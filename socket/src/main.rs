@@ -28,28 +28,32 @@ fn handle_client(mut stream: TcpStream) {
   
   // Response 
 
-  stream.read_exact(&mut response);
+  //stream.read_exact(&mut response);
 
   let mut data = "empty";
    
   match &request[..] {
-    b"turnOn" => &mut data = b"turnOn",
-    // b"turnOn" => stream.write_all(turn_on()),
-    b"turnOff" => &mut data = b"turnOff",
-    b"report" => &mut data = b"report",
-    _ => &mut data = b"ERR",
+    b"turnOn" => { 
+      data = "turnOn";
+      turn_on();
+    },
+    b"turnOff" => data = "turnOff",
+    b"report" => data = "report",
+    _ => data = "ERR",
   };
 
   let bytes = data.as_bytes(); 
   let len = bytes.len() as u32;
   let len_bytes = len.to_be_bytes();
   stream.write_all(&len_bytes);
+  stream.write_all(bytes);
 
   println!("Request: {}", String::from_utf8_lossy(&request[..]));
 }
 
-fn turn_on() -> &'static [u8; 6] { b"turnOn" }
-
+fn turn_on() { 
+  b"turnOn";
+}
 //fn turn_off(stream: TcpStream) {}
 //fn get_report(stream: TcpStream) {}
 
