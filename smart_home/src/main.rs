@@ -11,6 +11,7 @@ fn main() {
     .unwrap()
     .add_device_socket("s1");
 
+
   home_1
     .rooms["kitchen1"]
     .devices["s1"]

@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::io::prelude::*;
 use std::io::Result;
 use std::net::{TcpListener, TcpStream, SocketAddrV4, Ipv4Addr};
@@ -12,10 +11,29 @@ struct Socket {
 }
 
 impl Socket {
-    
+
+  fn set_status_on(&mut self) -> String {
+    self.on_status = true;
+    "Turned On".to_string()
+  }
+
+  fn set_status_off(&mut self) -> String {
+    self.on_status = false;
+    "Turned Off".to_string()
+  }
+
+  fn get_report(&mut self) -> String {
+    format!("Name: {}, About: {}, On_status: {}, current_power_consumption: {}", 
+      self.name,
+      self.about,
+      self.on_status,
+      self.current_power_consumption,
+    )
+  }
+
 }
 
-fn handle_client(mut stream: TcpStream) {
+fn handle_client(mut stream: TcpStream, device: &mut Socket) {
 
   // Request
 
@@ -28,21 +46,16 @@ fn handle_client(mut stream: TcpStream) {
   
   // Response 
 
-  //stream.read_exact(&mut response);
-
-  let mut data = "empty";
+  let mut data = "empty".to_string();
    
   match &request[..] {
-    b"turnOn" => { 
-      data = "turnOn";
-      turn_on();
-    },
-    b"turnOff" => data = "turnOff",
-    b"report" => data = "report",
-    _ => data = "ERR",
+    b"turnOn" => data = device.set_status_on(),
+    b"turnOff" => data = device.set_status_off(),
+    b"report" => data = device.get_report(),
+    _ => data = "ERR".to_string(),
   };
 
-  let bytes = data.as_bytes(); 
+  let bytes = data.as_bytes();
   let len = bytes.len() as u32;
   let len_bytes = len.to_be_bytes();
   stream.write_all(&len_bytes);
@@ -51,15 +64,9 @@ fn handle_client(mut stream: TcpStream) {
   println!("Request: {}", String::from_utf8_lossy(&request[..]));
 }
 
-fn turn_on() { 
-  b"turnOn";
-}
-//fn turn_off(stream: TcpStream) {}
-//fn get_report(stream: TcpStream) {}
-
 fn main() -> Result<()> {
 
-    let test_socket: Socket = Socket {
+    let mut test_socket: Socket = Socket {
       name: "Socket1",
       about: "Real Socket 1",
       on_status: false,
@@ -67,10 +74,11 @@ fn main() -> Result<()> {
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
 
+
     let listener = TcpListener::bind(test_socket.ip)?;
     // accept connections and process them serially
     for stream in listener.incoming() {
-        handle_client(stream?);
+        handle_client(stream?, &mut test_socket);
     }
 
     Ok(())

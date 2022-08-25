@@ -33,7 +33,7 @@ impl SmartHomeUnit for Socket {
   fn connect(&self) -> std::io::Result<()> {
     let mut stream = TcpStream::connect(self.ip)?;
 
-    let data = b"turnOn"; 
+    let data = b"turnOff"; 
 
     let len = data.len() as u32;
     let len_bytes = len.to_be_bytes();
