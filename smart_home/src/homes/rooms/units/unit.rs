@@ -1,6 +1,3 @@
-// pub mod socket;
-// pub mod thermometer;
-
 use std::io::prelude::*;
 use std::net::TcpStream;
 
@@ -90,10 +87,9 @@ impl SmartHomeUnit for Thermometer {
     println!("{}", report);
     Some(report)
   }
-
+    
   fn connect(&self) -> std::io::Result<()> {
-    let mut stream = TcpStream::connect(self.ip)?;
-    Ok(()) 
+    todo!();
   } 
 
   fn get_about(&self) -> &'static str {
@@ -138,6 +134,8 @@ mod tests {
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
 
+    new_socket.connect().unwrap();
+
     assert_eq!(new_socket.name, "1");
     assert!(new_socket.on_status);
     assert_eq!(new_socket.about, "1");
@@ -166,7 +164,6 @@ mod tests {
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
 
-    new_therm.connect();
 
     assert_eq!(new_therm.name, "1");
     assert!(new_therm.on_status);

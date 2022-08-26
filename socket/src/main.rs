@@ -46,20 +46,18 @@ fn handle_client(mut stream: TcpStream, device: &mut Socket) {
   
   // Response 
 
-  let mut data = "empty".to_string();
-   
-  match &request[..] {
-    b"turnOn" => data = device.set_status_on(),
-    b"turnOff" => data = device.set_status_off(),
-    b"report" => data = device.get_report(),
-    _ => data = "ERR".to_string(),
+  let data = match &request[..] {
+    b"turnOn" => device.set_status_on(),
+    b"turnOff" => device.set_status_off(),
+    b"report" => device.get_report(),
+    _ => "ERR".to_string(),
   };
 
   let bytes = data.as_bytes();
   let len = bytes.len() as u32;
   let len_bytes = len.to_be_bytes();
-  stream.write_all(&len_bytes);
-  stream.write_all(bytes);
+  stream.write_all(&len_bytes).unwrap();
+  stream.write_all(bytes).unwrap();
 
   println!("Request: {}", String::from_utf8_lossy(&request[..]));
 }
