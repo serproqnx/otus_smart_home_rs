@@ -8,13 +8,30 @@ fn main() {
   home_1
     .rooms
     .get_mut("kitchen1")
-    .unwrap()
+        .unwrap()
     .add_device_socket("s1");
-
 
   home_1
     .rooms["kitchen1"]
     .devices["s1"]
-    .connect()
-    .unwrap();
+    .turn_on()
+        .unwrap();
+
+  home_1
+    .rooms["kitchen1"]
+    .devices["s1"]
+    .get_report()
+        .unwrap();
+
+  home_1
+    .rooms["kitchen1"]
+    .devices["s1"]
+    .turn_off()
+        .unwrap();
+
+  home_1
+    .rooms["kitchen1"]
+    .devices["s1"]
+    .get_report()
+        .unwrap();
 }

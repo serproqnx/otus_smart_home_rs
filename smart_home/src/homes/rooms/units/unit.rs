@@ -1,5 +1,6 @@
 use std::io::prelude::*;
 use std::net::TcpStream;
+use std::io::Result;
 
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 
@@ -11,7 +12,10 @@ pub trait SmartHomeUnit {
   fn get_about(&self) -> &'static str;
   fn get_on_status(&self) -> &'static str;
   fn get_device_report(&self) -> Option<String>;
-  fn connect(&self) -> std::io::Result<()>;
+  fn turn_on(&self) -> Result<()>;
+  fn turn_off(&self) -> Result<()>;
+  fn send_cmd(&self, cmd: &'static str) -> Result<()>;
+  fn get_report(&self) -> Result<()>;
 }
 
 impl SmartHomeUnit for Socket {
@@ -27,16 +31,16 @@ impl SmartHomeUnit for Socket {
     Some(report)
   }
 
-  fn connect(&self) -> std::io::Result<()> {
+  fn send_cmd(&self, cmd: &'static str) -> Result<()> {
     let mut stream = TcpStream::connect(self.ip)?;
 
-    let data = b"turnOff"; 
+    let data = cmd; 
 
     let len = data.len() as u32;
     let len_bytes = len.to_be_bytes();
 
     stream.write_all(&len_bytes)?;
-    stream.write_all(data)?;
+    stream.write_all(data.as_bytes())?;
 
     let mut device_response = [0; 4];
     stream.read_exact(&mut device_response)?;
@@ -47,7 +51,9 @@ impl SmartHomeUnit for Socket {
     println!("Response: {}", String::from_utf8_lossy(&device_response));
 
     Ok(()) 
-  } 
+  }
+
+
 
   fn get_about(&self) -> &'static str {
     self.about
@@ -59,6 +65,21 @@ impl SmartHomeUnit for Socket {
     } else {
       "OFF"
     }) as _
+  }
+
+  fn turn_on(&self) -> Result<()> {
+    self.send_cmd("turnOn").unwrap(); 
+    Ok(()) 
+  }
+
+  fn turn_off(&self) -> Result<()> {
+    self.send_cmd("turnOff").unwrap();
+    Ok(())
+  }
+
+  fn get_report(&self) -> Result<()> {
+    self.send_cmd("report").unwrap();
+    Ok(())
   }
 
   fn get_name(&self) -> &'static str {
@@ -87,10 +108,12 @@ impl SmartHomeUnit for Thermometer {
     println!("{}", report);
     Some(report)
   }
+
+
+  fn send_cmd(&self, _cmd: &'static str) -> Result<()> {
+     Ok(()) 
+  }
     
-  fn connect(&self) -> std::io::Result<()> {
-    todo!();
-  } 
 
   fn get_about(&self) -> &'static str {
     // println!("{}", self.about);
@@ -104,6 +127,18 @@ impl SmartHomeUnit for Thermometer {
       "OFF"
     }) as _
   }
+
+  fn turn_on(&self) -> Result<()> {
+    Ok(())
+  }
+
+  fn turn_off(&self) -> Result<()> {
+    Ok(())
+  }
+ 
+  fn get_report(&self) -> Result<()> {
+    Ok(())
+   } 
 
   fn get_name(&self) -> &'static str {
     self.name
@@ -134,7 +169,6 @@ mod tests {
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
 
-    new_socket.connect().unwrap();
 
     assert_eq!(new_socket.name, "1");
     assert!(new_socket.on_status);
