@@ -3,13 +3,13 @@
 version = 3
 
 [[package]]
-name = "shp"
-version = "0.1.0"
-
-[[package]]
 name = "smart_home"
 version = "0.1.0"
 
 [[package]]
 name = "socket"
+version = "0.1.0"
+
+[[package]]
+name = "thermometer"
 version = "0.1.0"

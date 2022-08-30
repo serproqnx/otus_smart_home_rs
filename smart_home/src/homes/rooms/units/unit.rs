@@ -1,6 +1,7 @@
 use std::io::prelude::*;
 use std::net::TcpStream;
 use std::io::Result;
+use std::net::UdpSocket;
 
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 
@@ -111,7 +112,9 @@ impl SmartHomeUnit for Thermometer {
 
 
   fn send_cmd(&self, _cmd: &'static str) -> Result<()> {
-     Ok(()) 
+    let socket = UdpSocket::bind("127.0.0.1:34254").expect("couldn't bind to adress");
+    socket.send_to(&[0; 10], "127.0.0.1:8182").expect("couldn't send data");
+    Ok(())
   }
     
 

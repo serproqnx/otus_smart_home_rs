@@ -9,29 +9,12 @@ fn main() {
     .rooms
     .get_mut("kitchen1")
         .unwrap()
-    .add_device_socket("s1");
+    .add_device_thermometer("t1");
 
   home_1
     .rooms["kitchen1"]
-    .devices["s1"]
-    .turn_on()
+    .devices["t1"]
+    .send_cmd("TEST")
         .unwrap();
 
-  home_1
-    .rooms["kitchen1"]
-    .devices["s1"]
-    .get_report()
-        .unwrap();
-
-  home_1
-    .rooms["kitchen1"]
-    .devices["s1"]
-    .turn_off()
-        .unwrap();
-
-  home_1
-    .rooms["kitchen1"]
-    .devices["s1"]
-    .get_report()
-        .unwrap();
 }

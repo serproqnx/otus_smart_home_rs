@@ -3,5 +3,5 @@
 members = [
 	"smart_home",
 	"socket",
-  "shp",
+  "thermometer",
 ]
