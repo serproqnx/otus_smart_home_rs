@@ -55,7 +55,6 @@ impl SmartHomeUnit for Socket {
   }
 
 
-
   fn get_about(&self) -> &'static str {
     self.about
   }
@@ -112,8 +111,25 @@ impl SmartHomeUnit for Thermometer {
 
 
   fn send_cmd(&self, _cmd: &'static str) -> Result<()> {
+    
     let socket = UdpSocket::bind("127.0.0.1:34254").expect("couldn't bind to adress");
     socket.send_to(&[1; 10], "127.0.0.1:8182").expect("couldn't send data");
+    
+    let mut buf = [0; 10];
+    let (amt, src_addr) = socket.recv_from(&mut buf)?;
+    
+    let buf = &mut buf[..amt];
+    
+    println!("Addr: {:?}, Buf: {:?}", &src_addr, &buf);
+    // let socket = UdpSocket::bind("127.0.0.1:34254").expect("couldn't bind to adress");
+//     let mut buf = [0; 10];
+// 
+//     let (number_of_bytes, src_addr) = socket.peek_from(&mut buf)
+//         .expect("Didn't recieve data");
+// 
+//     let filled_buf = &mut buf[..number_of_bytes];
+//     println!("Addr: {:?}, Buf: {:?}", src_addr, filled_buf);
+
     Ok(())
   }
     
