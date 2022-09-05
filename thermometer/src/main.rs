@@ -1,21 +1,23 @@
 use std::net::UdpSocket;
+use std::sync::{Mutex, Arc};
 use std::thread;
 use std::time::Duration;
 
 struct Thermometer {
   name: &'static str,
   about: &'static str,
-  temp: i32,
+  temp: Arc<Mutex<i32>>,
 }
 
 impl Thermometer {
   fn gen_temp(&mut self) {
       loop {
 
-        let cur_temp = self.temp;
-        self.temp = cur_temp + 1; 
+        let cur_temp = Arc::clone(&self.temp);
+        *cur_temp.lock().unwrap() += 1;
+        //self.temp = cur_temp.lock().unwrap() + 1; 
 
-        println!("TEMP: {}", self.temp);
+        println!("TEMP: {:?}", self.temp);
         thread::sleep(Duration::from_millis(1000));
 
       }
@@ -46,20 +48,32 @@ impl Thermometer {
 fn main() {
   //let mut home_1: Home = Home::new("Home1");
 
-  let mut trm: Thermometer = Thermometer { name: "trm1", about: "about", temp: 42 };
+  let mut trm: Thermometer = Thermometer { name: "trm1", about: "about", 
+        temp: Arc::new(Mutex::new(42)) };
+    
+  let temp_arc = Arc::clone(&trm.temp);
   let t_temp = thread::spawn( move || { trm.gen_temp() } ); 
-
   let socket = UdpSocket::bind("127.0.0.1:8182").expect("couldn't bind to adress");
+  let mut count = 0u32;
 
-  let mut buf = [0; 10];
-  let (number_of_bytes, src_addr) = socket.recv_from(&mut buf)
-        .expect("Didn't recieve data");
+  loop {
+      count += 1;
+      let mut buf = [0; 10];
+      let (number_of_bytes, src_addr) = socket.recv_from(&mut buf)
+            .expect("Didn't recieve data");
+      
+      socket.connect(&src_addr).expect("connection fail");
+      let buf = &mut buf[..number_of_bytes];
+        //
+      //let buf = &trm.temp;
+      println!("Addr: {:?}, Buf: {:?}", &src_addr, &buf);
+      println!("{:?}", &temp_arc.lock().unwrap());
+      socket.send_to(buf, &src_addr).expect("couldn't send data");
+    
+     if count == 100 { break; };
 
-  let buf = &mut buf[..number_of_bytes];
-  println!("Addr: {:?}, Buf: {:?}", &src_addr, &buf);
-
-  buf.reverse();
-  socket.send_to(buf, &src_addr).expect("couldn't send data");
+     thread::sleep(Duration::from_millis(1000));
+  }
  
   t_temp.join().unwrap(); 
   
