@@ -118,21 +118,12 @@ impl SmartHomeUnit for Thermometer {
     let send_buf: [u8; 10] = [9, 1, 2, 3, 4, 5, 6, 7, 8, 9];
     socket.send_to(&send_buf, "127.0.0.1:8182").expect("couldn't send data");
     
-    let mut buf: [u8; 10] = [9, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-
+    let mut buf = [0; 10];
     let (amt, src_addr) = socket.recv_from(&mut buf)?;
-    
     let buf = &mut buf[..amt];
-    
-    println!("Addr: {:?}, Buf: {:?}", &src_addr, &buf);
-    // let socket = UdpSocket::bind("127.0.0.1:34254").expect("couldn't bind to adress");
-//     let mut buf = [0; 10];
-// 
-//     let (number_of_bytes, src_addr) = socket.peek_from(&mut buf)
-//         .expect("Didn't recieve data");
-// 
-//     let filled_buf = &mut buf[..number_of_bytes];
-//     println!("Addr: {:?}, Buf: {:?}", src_addr, filled_buf);
+    let temp_from_bytes = u32::from_be_bytes(buf.try_into().expect("nishmagla"));
+
+    println!("Addr: {:?}, Temp: {:?}", &src_addr, &temp_from_bytes);
 
     Ok(())
   }
