@@ -14,35 +14,16 @@ impl Thermometer {
   fn gen_temp(&mut self) {
     loop {
       let cur_temp = Arc::clone(&self.temp);
-      *cur_temp.lock().unwrap() += 1;
       
       let mut rng = thread_rng();
-      let mut temp = 0;
-      if random() { temp += rng.gen_range( -1..1 ) };
-      //self.temp = cur_temp.lock().unwrap() + 1;
+      *cur_temp.lock().unwrap() += rng.gen_range( -1..2 );
 
-      println!("TEMP: {:?}", self.temp);
+      println!("TEMP: {:?}", *self.temp.lock().unwrap());
+      //println!("TEMP: {:?}", test_temp);
       thread::sleep(Duration::from_millis(1000));
     }
   }
 
-  fn send_temp() {
-    loop {
-      let reciever = UdpSocket::bind("127.0.0.1:8182").expect("couldn't bind to adress");
-      let mut buf = [0; 10];
-
-      let (number_of_bytes, src_addr) = reciever.peek_from(&mut buf).expect("Didn't recieve data");
-
-      let filled_buf = &mut buf[..number_of_bytes];
-      println!("Addr: {:?}, Buf: {:?}", src_addr, filled_buf);
-
-      let sender = UdpSocket::bind("127.0.0.1:8182").expect("couldn't bind to adress");
-
-      sender
-        .send_to(&[0; 10], "127.0.0.1:34254")
-        .expect("couldn't send data");
-    }
-  }
 }
 
 fn main() {
@@ -51,7 +32,7 @@ fn main() {
   let mut trm: Thermometer = Thermometer {
     name: "trm1",
     about: "about",
-    temp: Arc::new(Mutex::new(42)),
+    temp: Arc::new(Mutex::new(0)),
   };
 
   let temp_arc = Arc::clone(&trm.temp);
