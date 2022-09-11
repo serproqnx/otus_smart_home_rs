@@ -121,7 +121,7 @@ impl SmartHomeUnit for Thermometer {
     let mut buf = [0; 10];
     let (amt, src_addr) = socket.recv_from(&mut buf)?;
     let buf = &mut buf[..amt];
-    let temp_from_bytes = u32::from_be_bytes(buf.try_into().expect("nishmagla"));
+    let temp_from_bytes = i32::from_be_bytes(buf.try_into().expect("it's not temp"));
 
     println!("Addr: {:?}, Temp: {:?}", &src_addr, &temp_from_bytes);
 
