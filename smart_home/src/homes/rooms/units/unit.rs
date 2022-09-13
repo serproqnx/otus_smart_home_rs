@@ -1,10 +1,15 @@
-use std::io::prelude::*;
-use std::net::TcpStream;
+use async_trait::async_trait;
+use tokio::net::{TcpListener, TcpStream};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+//use std::io::prelude::*;
+//use std::net::TcpStream;
 use std::io::Result;
 use std::net::UdpSocket;
 
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 
+#[async_trait]
 pub trait SmartHomeUnit {
   // fn new(name: &'static str) -> Self;
   fn get_name(&self) -> &'static str;
@@ -13,12 +18,13 @@ pub trait SmartHomeUnit {
   fn get_about(&self) -> &'static str;
   fn get_on_status(&self) -> &'static str;
   fn get_device_report(&self) -> Option<String>;
-  fn turn_on(&self) -> Result<()>;
-  fn turn_off(&self) -> Result<()>;
-  fn send_cmd(&self, cmd: &'static str) -> Result<()>;
-  fn get_report(&self) -> Result<()>;
+  async fn turn_on(&self) -> Result<()>;
+  async fn turn_off(&self) -> Result<()>;
+  async fn send_cmd(&self, cmd: &'static str) -> Result<()>;
+  async fn get_report(&self) -> Result<()>;
 }
 
+#[async_trait]
 impl SmartHomeUnit for Socket {
   fn get_device_report(&self) -> Option<String> {
     let report = format!(
@@ -32,23 +38,24 @@ impl SmartHomeUnit for Socket {
     Some(report)
   }
 
-  fn send_cmd(&self, cmd: &'static str) -> Result<()> {
-    let mut stream = TcpStream::connect(self.ip)?;
+  async fn send_cmd(&self, cmd: &'static str) -> Result<()> {
+    println!("SEND_CMD");
+    let mut stream = TcpStream::connect(self.ip).await?;
 
     let data = cmd; 
 
     let len = data.len() as u32;
     let len_bytes = len.to_be_bytes();
 
-    stream.write_all(&len_bytes)?;
-    stream.write_all(data.as_bytes())?;
+    stream.write_all(&len_bytes).await?;
+    stream.write_all(data.as_bytes()).await?;
 
     let mut device_response = [0; 4];
-    stream.read_exact(&mut device_response)?;
+    stream.read_exact(&mut device_response).await?;
     let resp_len = u32::from_be_bytes(device_response);
     
     let mut device_response = vec![0; resp_len as _];
-    stream.read_exact(&mut device_response)?;
+    stream.read_exact(&mut device_response).await?;
     println!("Response: {}", String::from_utf8_lossy(&device_response));
 
     Ok(()) 
@@ -67,18 +74,18 @@ impl SmartHomeUnit for Socket {
     }) as _
   }
 
-  fn turn_on(&self) -> Result<()> {
-    self.send_cmd("turnOn").unwrap(); 
+  async fn turn_on(&self) -> Result<()> {
+    self.send_cmd("turnOn").await?; 
     Ok(()) 
   }
 
-  fn turn_off(&self) -> Result<()> {
-    self.send_cmd("turnOff").unwrap();
+  async fn turn_off(&self) -> Result<()> {
+    self.send_cmd("turnOff").await?;
     Ok(())
   }
 
-  fn get_report(&self) -> Result<()> {
-    self.send_cmd("report").unwrap();
+  async fn get_report(&self) -> Result<()> {
+    self.send_cmd("report").await?;
     Ok(())
   }
 
@@ -96,6 +103,7 @@ impl SmartHomeUnit for Socket {
   }
 }
 
+#[async_trait]
 impl SmartHomeUnit for Thermometer {
   fn get_device_report(&self) -> Option<String> {
     let report = format!(
@@ -110,7 +118,7 @@ impl SmartHomeUnit for Thermometer {
   }
 
 
-  fn send_cmd(&self, _cmd: &'static str) -> Result<()> {
+  async fn send_cmd(&self, _cmd: &'static str) -> Result<()> {
     
     let socket = UdpSocket::bind("127.0.0.1:34254").expect("couldn't bind to adress");
     
@@ -142,17 +150,17 @@ impl SmartHomeUnit for Thermometer {
     }) as _
   }
 
-  fn turn_on(&self) -> Result<()> {
+ async fn turn_on(&self) -> Result<()> {
     Ok(())
   }
 
-  fn turn_off(&self) -> Result<()> {
+ async fn turn_off(&self) -> Result<()> {
     Ok(())
   }
  
-  fn get_report(&self) -> Result<()> {
+ async fn get_report(&self) -> Result<()> {
     Ok(())
-   } 
+  } 
 
   fn get_name(&self) -> &'static str {
     self.name

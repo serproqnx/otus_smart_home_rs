@@ -29,7 +29,6 @@ impl Thermometer {
 }
 
 fn main() {
-  //let mut home_1: Home = Home::new("Home1");
 
   let mut trm: Thermometer = Thermometer {
     name: "trm1",
@@ -53,7 +52,7 @@ fn main() {
     println!("{:?}", &buf);
 
     let temp_bytes = &temp_arc.lock().unwrap().to_be_bytes();
-    //let buf = &trm.temp;
+
     println!("Addr: {:?}, Buf: {:?}", &src_addr, &buf);
     println!("{:?}", temp_bytes);
 
@@ -63,7 +62,6 @@ fn main() {
       break;
     };
 
-    //thread::sleep(Duration::from_millis(100));
   }
 
   t_temp.join().unwrap();

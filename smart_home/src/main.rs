@@ -14,7 +14,7 @@ fn main() {
   home_1
     .rooms["kitchen1"]
     .devices["t1"]
-    .send_cmd("TEST")
-        .unwrap();
+    .send_cmd("TEST");
+        //.unwrap();
 
 }
