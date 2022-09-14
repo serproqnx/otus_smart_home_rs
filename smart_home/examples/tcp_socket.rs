@@ -1,8 +1,8 @@
-use async_trait::async_trait;
 use smart_home_lib::homes::home::Home;
 
-#[async_trait]
-async fn main() {
+
+#[tokio::main]
+async fn main() ->  Result<(), Box<dyn std::error::Error>> {
   let mut home_1: Home = Home::new("Home1");
   home_1.add_room("kitchen1");
 
@@ -12,36 +12,34 @@ async fn main() {
         .unwrap()
     .add_device_socket("s1");
 
-  println!("TurnOn");
   home_1
     .rooms["kitchen1"]
     .devices["s1"]
-    .send_cmd("turnO2n");
+    .send_cmd("turnOn").await.unwrap();
 //        .unwrap();
   
-  println!("TurnOn 2");
   home_1
     .rooms["kitchen1"]
     .devices["s1"]
-    .turn_on();
+    .turn_on().await.unwrap();
 //        .unwrap();
 
-  println!("get report");
   home_1
     .rooms["kitchen1"]
     .devices["s1"]
-    .get_report();
+    .get_report().await.unwrap();
  //       .unwrap();
 
   home_1
     .rooms["kitchen1"]
     .devices["s1"]
-    .turn_off();
+    .turn_off().await.unwrap();
   //      .unwrap();
 
   home_1
     .rooms["kitchen1"]
     .devices["s1"]
-    .get_report();
-   //     .unwrap();
+    .get_report().await.unwrap();
+    
+    Ok(())
 }

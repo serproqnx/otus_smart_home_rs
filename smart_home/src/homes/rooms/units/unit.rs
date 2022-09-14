@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use tokio::net::{TcpListener, TcpStream};
+use tokio::net::{TcpStream};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 //use std::io::prelude::*;
@@ -39,7 +39,6 @@ impl SmartHomeUnit for Socket {
   }
 
   async fn send_cmd(&self, cmd: &'static str) -> Result<()> {
-    println!("SEND_CMD");
     let mut stream = TcpStream::connect(self.ip).await?;
 
     let data = cmd; 
