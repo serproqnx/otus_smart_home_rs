@@ -1,17 +1,17 @@
-use std::net::UdpSocket;
+use tokio::net::UdpSocket;
+
+//use std::net::UdpSocket;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use rand::prelude::*;
 
 struct Thermometer {
-  name: &'static str,
-  about: &'static str,
   temp: Arc<Mutex<i32>>,
 }
 
 impl Thermometer {
-  fn gen_temp(&mut self) {
+  async fn gen_temp(&mut self) {
     let cur_temp = Arc::clone(&self.temp);
     let mut rng = thread_rng();
 
@@ -28,25 +28,25 @@ impl Thermometer {
 
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
 
   let mut trm: Thermometer = Thermometer {
-    name: "trm1",
-    about: "about",
     temp: Arc::new(Mutex::new(0)),
   };
 
   let temp_arc = Arc::clone(&trm.temp);
-  let t_temp = thread::spawn( move || trm.gen_temp() );
-  let socket = UdpSocket::bind("127.0.0.1:8182").expect("couldn't bind to adress");
+  let t_temp = tokio::spawn( async move { trm.gen_temp().await });
+  let socket = UdpSocket::bind("127.0.0.1:8182").await.expect("couldn't bind to adress");
+
   let mut count = 0i32;
 
   loop {
     count += 1;
     let mut buf = [0; 10];
-    let (number_of_bytes, src_addr) = socket.recv_from(&mut buf).expect("Didn't recieve data");
+    let (number_of_bytes, src_addr) = socket.recv_from(&mut buf).await.expect("Didn't recieve data");
 
-    socket.connect(&src_addr).expect("connection fail");
+    socket.connect(&src_addr).await.expect("connection fail");
     let buf = &mut buf[..number_of_bytes];
 
     println!("{:?}", &buf);
@@ -56,7 +56,7 @@ fn main() {
     println!("Addr: {:?}, Buf: {:?}", &src_addr, &buf);
     println!("{:?}", temp_bytes);
 
-    socket.send_to(temp_bytes, &src_addr).expect("couldn't send data");
+    socket.send_to(temp_bytes, &src_addr).await.expect("couldn't send data");
 
     if count == 100 {
       break;
@@ -64,5 +64,5 @@ fn main() {
 
   }
 
-  t_temp.join().unwrap();
+  t_temp.await.unwrap();
 }

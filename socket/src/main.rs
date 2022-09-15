@@ -1,6 +1,8 @@
-use std::io::prelude::*;
-use std::io::Result;
-use std::net::{TcpListener, TcpStream, SocketAddrV4, Ipv4Addr};
+use tokio::net::{TcpListener, TcpStream};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use std::io;
+//use std::io::prelude::*;
+use std::net::{SocketAddrV4, Ipv4Addr};
 
 struct Socket {
   pub name: &'static str,
@@ -33,16 +35,16 @@ impl Socket {
 
 }
 
-fn handle_client(mut stream: TcpStream, device: &mut Socket) {
+async fn handle_client(mut stream: TcpStream, device: &mut Socket) {
 
   // Request
 
   let mut request = [0; 4];
-  stream.read_exact(&mut request).unwrap();
+  stream.read_exact(&mut request).await.unwrap();
   let req_len = u32::from_be_bytes(request);
 
   let mut request = vec![0; req_len as _];
-  stream.read_exact(&mut request).unwrap();
+  stream.read_exact(&mut request).await.unwrap();
   
   // Response 
 
@@ -56,13 +58,15 @@ fn handle_client(mut stream: TcpStream, device: &mut Socket) {
   let bytes = data.as_bytes();
   let len = bytes.len() as u32;
   let len_bytes = len.to_be_bytes();
-  stream.write_all(&len_bytes).unwrap();
-  stream.write_all(bytes).unwrap();
+  stream.write_all(&len_bytes).await.unwrap();
+  stream.write_all(bytes).await.unwrap();
+
 
   println!("Request: {}", String::from_utf8_lossy(&request[..]));
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> io::Result<()> {
 
     let mut test_socket: Socket = Socket {
       name: "Socket1",
@@ -73,11 +77,16 @@ fn main() -> Result<()> {
     };
 
 
-    let listener = TcpListener::bind(test_socket.ip)?;
-    // accept connections and process them serially
-    for stream in listener.incoming() {
-        handle_client(stream?, &mut test_socket);
+    let listener = TcpListener::bind(test_socket.ip).await?;
+    //
+    // accept connections and process them serially for stream in listener. {
+    //    handle_client(stream?, &mut test_socket);
+    //}
+    loop {
+        let (socket, _) = listener.accept().await?;
+        handle_client(socket, &mut test_socket).await;
     }
 
-    Ok(())
+
+    //Ok(())
 }
