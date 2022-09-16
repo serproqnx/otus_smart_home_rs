@@ -9,6 +9,19 @@ use std::net::UdpSocket;
 
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 
+#[derive(Default)]
+pub struct UnitBuilder {
+  name: String,
+}
+
+impl UnitBuilder {
+    pub fn new() -> UnitBuilder {
+      UnitBuilder {
+        name: String::from("X"),
+      }
+    }
+}
+
 #[async_trait]
 pub trait SmartHomeUnit {
   // fn new(name: &'static str) -> Self;

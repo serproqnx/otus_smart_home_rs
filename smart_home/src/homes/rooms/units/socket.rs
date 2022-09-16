@@ -1,6 +1,8 @@
 use std::net::SocketAddrV4;
 
-#[derive(Debug, Clone)]
+use super::unit::UnitBuilder;
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Socket {
   pub name: &'static str,
   pub about: &'static str,
@@ -10,9 +12,14 @@ pub struct Socket {
 }
 
 impl Socket {
+  pub fn builder() -> UnitBuilder {
+    UnitBuilder::default()
+  } 
+
   pub fn get_current_power_consumption(&self) -> i32 {
     self.current_power_consumption
   }
+
 }
 
 #[cfg(test)]
