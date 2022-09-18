@@ -3,7 +3,7 @@ use tokio::net::{TcpStream};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 //use std::io::prelude::*;
-//use std::net::TcpStream;
+use std::net::{SocketAddrV4, Ipv4Addr};
 use std::io::Result;
 use std::net::UdpSocket;
 
@@ -11,19 +11,49 @@ use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 
 #[derive(Default)]
 pub struct UnitBuilder {
-  name: String,
+  pub name: &'static str,
+  pub about: &'static str,
+  pub on_status: bool,
+  pub current_power_consumption: i32,
+  pub ip: SocketAddrV4,
+}
+
+impl Default for SocketAddrV4 {
+    fn default() -> Self {
+       SocketAddrV4::new(Ipv4Addr::new(127,0,0,1), 8080)
+    }
 }
 
 impl UnitBuilder {
     pub fn new() -> UnitBuilder {
       UnitBuilder {
-        name: String::from("X"),
+        name: "BUILDER_NAME",
+        about: "BUILDER_ABOUT",
+        on_status: false,
+        current_power_consumption: 0,
+        ip: SocketAddrV4::new(Ipv4Addr::new(127,0,0,1), 8080) 
       }
+    }
+
+    pub fn name(mut self, name: String) -> UnitBuilder {
+      self.name = name;
+      self
+    }
+
+    pub fn builder(self) -> Box<dyn SmartHomeUnit> {
+       Box::new(
+            Socket {
+                name: self.name,
+                current_power_consumption: self.current_power_consumption,
+                about: self.about,
+                ip: self.ip,
+                on_status: self.on_status,
+       })
     }
 }
 
 #[async_trait]
-pub trait SmartHomeUnit {
+pub trait SmartHomeUnit { 
   // fn new(name: &'static str) -> Self;
   fn get_name(&self) -> &'static str;
   fn get_bool_on_status(&self) -> bool;
