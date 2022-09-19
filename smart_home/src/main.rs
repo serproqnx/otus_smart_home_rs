@@ -1,4 +1,4 @@
-use smart_home_lib::homes::{home::Home, rooms::units::unit::UnitBuilder};
+use smart_home_lib::homes::{home::Home, rooms::units::unit_builder::UnitBuilder};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>>  {

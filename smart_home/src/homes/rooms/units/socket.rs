@@ -1,6 +1,6 @@
 use std::net::SocketAddrV4;
 
-use super::unit::UnitBuilder;
+use super::unit_builder::UnitBuilder;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Socket {
