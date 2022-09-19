@@ -75,7 +75,8 @@ async fn main() -> io::Result<()> {
       current_power_consumption: 42,
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
-
+    
+    println!("SOCKET: {:?}", test_socket.ip);
 
     let listener = TcpListener::bind(test_socket.ip).await?;
     //

@@ -3,7 +3,8 @@ use std::{collections::HashMap, net::{SocketAddrV4, Ipv4Addr}};
 use crate::homes::rooms::units::{
     socket::Socket, 
     thermometer::Thermometer, 
-    unit::SmartHomeUnit
+    unit::SmartHomeUnit,
+    //unit::UnitBuilder,
 };
 
 pub struct Room {
@@ -23,13 +24,17 @@ impl Room {
     self.devices.remove(name)
   }
 
+  pub fn add_device( &mut self, device: Box<dyn SmartHomeUnit> ) {
+    self.devices.insert( device.get_name(), device );
+  }
+
   pub fn add_device_thermometer(&mut self, name: &'static str) {
     let new_thermometer = Thermometer {
       name,
       on_status: false,
       about: "about Thermometer",
       current_temperature: 20,
-      ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
+      ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8182),
     };
     self.devices.insert(name, Box::new(new_thermometer));
   }
