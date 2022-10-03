@@ -1,4 +1,10 @@
+
 use smart_home_lib::homes::{home::Home, rooms::units::unit_builder::UnitBuilder};
+
+use smart_home_lib::homes::rooms::units::unit_visitor::{
+  GetReportVisitor, Report, Visitor
+};
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>>  {
@@ -28,6 +34,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>  {
             .about("about_thermometer_builder")
             .build()
     );
+
+ // home_1
+ //   .rooms["kitcken1"]
+    //.devices["Socket_builder"]
+ //   .devices
+ //   .get_mut("Socket_builder").unwrap()
+ //   .accept(&mut Box::new(&GetReportVisitor));
 
   home_1
     .rooms["kitchen1"]

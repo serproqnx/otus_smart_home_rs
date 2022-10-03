@@ -8,6 +8,9 @@ use std::net::UdpSocket;
 
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 
+use super::unit_visitor::Visitor;
+
+
 
 #[async_trait]
 pub trait SmartHomeUnit { 
@@ -18,14 +21,42 @@ pub trait SmartHomeUnit {
   fn get_about(&self) -> &'static str;
   fn get_on_status(&self) -> &'static str;
   fn get_device_report(&self) -> Option<String>;
+
   async fn turn_on(&self) -> Result<()>;
   async fn turn_off(&self) -> Result<()>;
   async fn send_cmd(&self, cmd: &'static str) -> Result<()>;
   async fn get_report(&self) -> Result<()>;
+
+  fn accept(&mut self, v: &Box<&dyn Visitor>);
 }
 
 #[async_trait]
 impl SmartHomeUnit for Socket {
+  fn get_name(&self) -> &'static str {
+    self.name
+  }
+fn get_bool_on_status(&self) -> bool {
+    self.on_status
+  }
+
+  fn turn_on_off(&mut self) {
+    self.on_status = !&self.on_status;
+    println!("{} turned {}", self.name, self.get_on_status());
+  }
+
+
+  fn get_about(&self) -> &'static str {
+    self.about
+  }
+
+  fn get_on_status(&self) -> &'static str {
+    (if self.get_bool_on_status() {
+      "ON"
+    } else {
+      "OFF"
+    }) as _
+  }
+
   fn get_device_report(&self) -> Option<String> {
     let report = format!(
       "\nName: {}\nAbout: {}\nPower: {}\nCurrent power consumption: {}\n",
@@ -36,6 +67,16 @@ impl SmartHomeUnit for Socket {
     );
     println!("{}", report);
     Some(report)
+  }
+
+  async fn turn_on(&self) -> Result<()> {
+    self.send_cmd("turnOn").await?; 
+    Ok(()) 
+  }
+
+  async fn turn_off(&self) -> Result<()> {
+    self.send_cmd("turnOff").await?;
+    Ok(())
   }
 
   async fn send_cmd(&self, cmd: &'static str) -> Result<()> {
@@ -60,8 +101,35 @@ impl SmartHomeUnit for Socket {
     Ok(()) 
   }
 
+  async fn get_report(&self) -> Result<()> {
+    self.send_cmd("report").await?;
+    Ok(())
+  }
+
+  fn accept(&mut self, v: &Box<&dyn Visitor>) {
+    v.visit_socket(self)
+  }
+}
+
+#[async_trait]
+impl SmartHomeUnit for Thermometer {
+  fn get_name(&self) -> &'static str {
+    self.name
+  }
+
+  fn get_bool_on_status(&self) -> bool {
+    self.on_status
+  }
+
+
+  fn turn_on_off(&mut self) {
+    self.on_status = !&self.on_status;
+    println!("{} turned {}", self.name, self.get_on_status());
+  }
+    
 
   fn get_about(&self) -> &'static str {
+    // println!("{}", self.about);
     self.about
   }
 
@@ -73,37 +141,6 @@ impl SmartHomeUnit for Socket {
     }) as _
   }
 
-  async fn turn_on(&self) -> Result<()> {
-    self.send_cmd("turnOn").await?; 
-    Ok(()) 
-  }
-
-  async fn turn_off(&self) -> Result<()> {
-    self.send_cmd("turnOff").await?;
-    Ok(())
-  }
-
-  async fn get_report(&self) -> Result<()> {
-    self.send_cmd("report").await?;
-    Ok(())
-  }
-
-  fn get_name(&self) -> &'static str {
-    self.name
-  }
-
-  fn get_bool_on_status(&self) -> bool {
-    self.on_status
-  }
-
-  fn turn_on_off(&mut self) {
-    self.on_status = !&self.on_status;
-    println!("{} turned {}", self.name, self.get_on_status());
-  }
-}
-
-#[async_trait]
-impl SmartHomeUnit for Thermometer {
   fn get_device_report(&self) -> Option<String> {
     let report = format!(
       "\nName: {}\nAbout: {}\nPower: {}\nTemperature: {}\n",
@@ -116,6 +153,13 @@ impl SmartHomeUnit for Thermometer {
     Some(report)
   }
 
+  async fn turn_on(&self) -> Result<()> {
+    Ok(())
+  }
+ 
+  async fn turn_off(&self) -> Result<()> {
+    Ok(())
+  } 
 
   async fn send_cmd(&self, _cmd: &'static str) -> Result<()> {
     
@@ -134,44 +178,13 @@ impl SmartHomeUnit for Thermometer {
 
     Ok(())
   }
-    
 
-  fn get_about(&self) -> &'static str {
-    // println!("{}", self.about);
-    self.about
-  }
-
-  fn get_on_status(&self) -> &'static str {
-    (if self.get_bool_on_status() {
-      "ON"
-    } else {
-      "OFF"
-    }) as _
-  }
-
- async fn turn_on(&self) -> Result<()> {
+  async fn get_report(&self) -> Result<()> {
     Ok(())
   }
 
- async fn turn_off(&self) -> Result<()> {
-    Ok(())
-  }
- 
- async fn get_report(&self) -> Result<()> {
-    Ok(())
-  } 
-
-  fn get_name(&self) -> &'static str {
-    self.name
-  }
-
-  fn get_bool_on_status(&self) -> bool {
-    self.on_status
-  }
-
-  fn turn_on_off(&mut self) {
-    self.on_status = !&self.on_status;
-    println!("{} turned {}", self.name, self.get_on_status());
+  fn accept(&mut self, v: &Box<&dyn Visitor>) {
+    v.visit_thermometer(self)
   }
 }
 
