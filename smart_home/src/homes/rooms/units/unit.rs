@@ -27,7 +27,7 @@ pub trait SmartHomeUnit {
   async fn send_cmd(&self, cmd: &'static str) -> Result<()>;
   async fn get_report(&self) -> Result<()>;
 
-  fn accept(&mut self, v: &Box<&dyn Visitor>);
+  fn accept(&mut self, v: &dyn Visitor);
 }
 
 #[async_trait]
@@ -106,7 +106,7 @@ fn get_bool_on_status(&self) -> bool {
     Ok(())
   }
 
-  fn accept(&mut self, v: &Box<&dyn Visitor>) {
+  fn accept(&mut self, v: &dyn Visitor) {
     v.visit_socket(self)
   }
 }
@@ -183,7 +183,7 @@ impl SmartHomeUnit for Thermometer {
     Ok(())
   }
 
-  fn accept(&mut self, v: &Box<&dyn Visitor>) {
+  fn accept(&mut self, v: &dyn Visitor) {
     v.visit_thermometer(self)
   }
 }

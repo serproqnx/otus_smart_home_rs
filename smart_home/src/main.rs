@@ -35,47 +35,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>  {
             .build()
     );
 
- // home_1
- //   .rooms["kitcken1"]
-    //.devices["Socket_builder"]
- //   .devices
- //   .get_mut("Socket_builder").unwrap()
- //   .accept(&mut Box::new(&GetReportVisitor));
-
   home_1
-    .rooms["kitchen1"]
-    .devices["Socket_builder"]
-    .send_cmd("turnOn").await?;
-//        .unwrap();
-  
-  home_1
-    .rooms["kitchen1"]
-    .devices["Socket_builder"]
-    .turn_on().await?;
-//        .unwrap();
+    .rooms
+    .get_mut("kitchen1")
+        .unwrap()
+   .devices
+   .get_mut("Socket_builder").unwrap()
+   .accept(&GetReportVisitor);
 
-  home_1
-    .rooms["kitchen1"]
-    .devices["Socket_builder"]
-    .get_report().await?;
- //       .unwrap();
-
-  home_1
-    .rooms["kitchen1"]
-    .devices["Socket_builder"]
-    .turn_off().await?;
-  //      .unwrap();
-
-  home_1
-    .rooms["kitchen1"]
-    .devices["Socket_builder"]
-    .get_report().await?;
-
-
-  home_1
-    .rooms["kitchen1"]
-    .devices["Thermometer_builder"]
-    .send_cmd("TEST").await?;
+  //home_1
+//    .rooms["kitchen1"]
+//    .devices["Socket_builder"]
+//    .send_cmd("turnOn").await?;
+////        .unwrap();
+//  
+//  home_1
+//    .rooms["kitchen1"]
+//    .devices["Socket_builder"]
+//    .turn_on().await?;
+////        .unwrap();
+//
+//  home_1
+//    .rooms["kitchen1"]
+//    .devices["Socket_builder"]
+//    .get_report().await?;
+// //       .unwrap();
+//
+//  home_1
+//    .rooms["kitchen1"]
+//    .devices["Socket_builder"]
+//    .turn_off().await?;
+//  //      .unwrap();
+//
+//  home_1
+//    .rooms["kitchen1"]
+//    .devices["Socket_builder"]
+//    .get_report().await?;
+//
+//
+//  home_1
+//    .rooms["kitchen1"]
+//    .devices["Thermometer_builder"]
+//    .send_cmd("TEST").await?;
         //.unwrap();
  Ok(())
 }
