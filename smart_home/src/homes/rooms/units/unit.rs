@@ -10,8 +10,6 @@ use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 
 use super::unit_visitor::Visitor;
 
-
-
 #[async_trait]
 pub trait SmartHomeUnit { 
   // fn new(name: &'static str) -> Self;
@@ -35,7 +33,8 @@ impl SmartHomeUnit for Socket {
   fn get_name(&self) -> &'static str {
     self.name
   }
-fn get_bool_on_status(&self) -> bool {
+
+  fn get_bool_on_status(&self) -> bool {
     self.on_status
   }
 
@@ -44,8 +43,8 @@ fn get_bool_on_status(&self) -> bool {
     println!("{} turned {}", self.name, self.get_on_status());
   }
 
-
   fn get_about(&self) -> &'static str {
+    println!("About socket builder: {}", self.about);
     self.about
   }
 

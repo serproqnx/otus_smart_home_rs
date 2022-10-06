@@ -21,7 +21,7 @@ impl Thermometer {
 
       println!("TEMP: {:?}", *self.temp.lock().unwrap());
       //println!("TEMP: {:?}", test_temp);
-      thread::sleep(Duration::from_millis(100));
+      thread::sleep(Duration::from_millis(5000));
     }
 
   }

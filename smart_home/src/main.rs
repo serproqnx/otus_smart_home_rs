@@ -2,7 +2,7 @@
 use smart_home_lib::homes::{home::Home, rooms::units::unit_builder::UnitBuilder};
 
 use smart_home_lib::homes::rooms::units::unit_visitor::{
-  GetReportVisitor, Report, Visitor
+  GetReportVisitor, GetAboutVisitor, TurnOnVisitor 
 };
 
 
@@ -14,35 +14,47 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>  {
   home_1
     .rooms
     .get_mut("kitchen1")
-        .unwrap()
+      .unwrap()
     .add_device( 
-        UnitBuilder::new()
-            .unit_type("socket")
-            .name("Socket_builder")
-            .about("about_socket_builder")
-            .build()
+      UnitBuilder::new()
+        .unit_type("socket")
+        .name("Socket_builder")
+        .about("about_socket_builder")
+        .build()
     );
 
   home_1
     .rooms
     .get_mut("kitchen1")
-        .unwrap()
+      .unwrap()
     .add_device( 
-        UnitBuilder::new()
-            .unit_type("thermometer")
-            .name("Thermometer_builder")
-            .about("about_thermometer_builder")
-            .build()
+      UnitBuilder::new()
+        .unit_type("thermometer")
+        .name("Thermometer_builder")
+        .about("about_thermometer_builder")
+        .build()
     );
 
   home_1
     .rooms
-    .get_mut("kitchen1")
-        .unwrap()
-   .devices
-   .get_mut("Socket_builder").unwrap()
-   .accept(&GetReportVisitor);
+    .get_mut("kitchen1").unwrap()
+    .devices
+    .get_mut("Socket_builder").unwrap()
+    .accept(&GetReportVisitor);
 
+  home_1
+    .rooms
+    .get_mut("kitchen1").unwrap()
+    .devices
+    .get_mut("Thermometer_builder").unwrap()
+    .accept(&GetAboutVisitor);
+
+  home_1
+    .rooms
+    .get_mut("kitchen1").unwrap()
+    .devices
+    .get_mut("Thermometer_builder").unwrap()
+    .accept(&TurnOnVisitor);
   //home_1
 //    .rooms["kitchen1"]
 //    .devices["Socket_builder"]
