@@ -8,7 +8,10 @@ use std::net::UdpSocket;
 
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 
+use super::error::NetError;
 use super::unit_visitor::Visitor;
+
+
 
 #[async_trait]
 pub trait SmartHomeUnit { 
