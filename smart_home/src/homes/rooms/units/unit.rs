@@ -8,7 +8,8 @@ use std::net::UdpSocket;
 
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 
-use crate::homes::rooms::units::error::NetError;
+use crate::homes::rooms::units::error::ConnectResult;
+use super::error::NetError;
 use super::unit_visitor::Visitor;
 
 
@@ -25,7 +26,7 @@ pub trait SmartHomeUnit {
 
   async fn turn_on(&self) -> io::Result<()>;
   async fn turn_off(&self) -> io::Result<()>;
-  async fn send_cmd(&self, cmd: &'static str) -> Result<(), NetError>;
+  async fn send_cmd(&self, cmd: &'static str) -> ConnectResult<()>;
   async fn get_report(&self) -> io::Result<()>;
 
   fn accept(&mut self, v: &dyn Visitor);
@@ -72,16 +73,16 @@ impl SmartHomeUnit for Socket {
   }
 
   async fn turn_on(&self) -> io::Result<()> {
-    self.send_cmd("turnOn").await?; 
+    self.send_cmd("turnOn").await.unwrap(); 
     Ok(()) 
   }
 
   async fn turn_off(&self) -> io::Result<()> {
-    self.send_cmd("turnOff").await?;
+    self.send_cmd("turnOff").await.unwrap();
     Ok(())
   }
 
-  async fn send_cmd(&self, cmd: &'static str) -> Result<(), NetError> {
+  async fn send_cmd(&self, cmd: &'static str) -> ConnectResult<()> {
     let mut stream = TcpStream::connect(self.ip).await?;
 
     let data = cmd; 
@@ -104,7 +105,7 @@ impl SmartHomeUnit for Socket {
   }
 
   async fn get_report(&self) -> io::Result<()> {
-    self.send_cmd("report").await?;
+    self.send_cmd("report").await.unwrap();
     Ok(())
   }
 

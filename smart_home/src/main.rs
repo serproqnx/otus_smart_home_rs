@@ -55,10 +55,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>  {
     .devices
     .get_mut("Thermometer_builder").unwrap()
     .accept(&TurnOnVisitor);
-  //home_1
-//    .rooms["kitchen1"]
-//    .devices["Socket_builder"]
-//    .send_cmd("turnOn").await?;
+
+home_1
+  .rooms["kitchen1"]
+  .devices["Socket_builder"]
+  .send_cmd("turnOn").await?;
 ////        .unwrap();
 //  
 //  home_1
