@@ -6,3 +6,4 @@ members = [
   "thermometer",
   "echo",
 ]
+resolver = "2"

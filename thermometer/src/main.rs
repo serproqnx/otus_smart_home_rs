@@ -23,9 +23,7 @@ impl Thermometer {
       //println!("TEMP: {:?}", test_temp);
       thread::sleep(Duration::from_millis(5000));
     }
-
   }
-
 }
 
 #[tokio::main]

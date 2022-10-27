@@ -4,6 +4,58 @@ use std::io;
 //use std::io::prelude::*;
 use std::net::{SocketAddrV4, Ipv4Addr};
 
+use iced:: {  button, Button, Column, Element, Row, Sandbox, Settings, Text };
+
+//Model
+//View
+//Message
+//Update
+
+#[derive(Debug, Clone)]
+enum Message {
+  Increment,
+  Decrement,
+}
+
+struct Model {
+  counter: i64, 
+  button_inc: button::State,
+  button_dec: button::State,
+}
+
+impl Sandbox for Model {
+  type Message = Message;
+
+  fn new() -> Self {
+    Self {
+      counter: 42,
+      button_inc: Default::default(),
+      button_dec: Default::default(),
+    }
+  }
+
+  fn title(&self) -> String {
+    "Socket".into()
+  }
+
+  fn update(&mut self, message: Self::Message) {
+    match message {
+      Message::Increment => self.counter += 1,
+      Message::Decrement => self.counter -= 1,
+    }
+  }
+
+  fn view(&mut self) -> Element<'_, Self::Message> {
+    let text = Text::new(self.counter.to_string()).size(60);
+      
+    let button_inc = Button::new(&mut self.button_inc, Text::new("Increment")).on_press(Message::Increment);
+    let button_dec = Button::new(&mut self.button_dec, Text::new("Decrement")).on_press(Message::Decrement);
+
+    Column::new().padding(20).push(button_inc).push(text).push(button_dec).into()
+  } 
+
+}
+
 struct Socket {
   pub name: &'static str,
   pub about: &'static str,
@@ -67,6 +119,7 @@ async fn handle_client(mut stream: TcpStream, device: &mut Socket) {
 
 #[tokio::main]
 async fn main() -> io::Result<()> {
+//async fn main() -> iced::Result {
 
     let mut test_socket: Socket = Socket {
       name: "Socket1",
@@ -79,15 +132,31 @@ async fn main() -> io::Result<()> {
     println!("SOCKET: {:?}", test_socket.ip);
 
     let listener = TcpListener::bind(test_socket.ip).await?;
+
+  let t_gui = tokio::spawn( async move { gui().await });
     //
     // accept connections and process them serially for stream in listener. {
     //    handle_client(stream?, &mut test_socket);
     //}
+
+  t_gui.await?;
+
     loop {
-        let (socket, _) = listener.accept().await?;
-        handle_client(socket, &mut test_socket).await;
+      let (socket, _) = listener.accept().await?;
+      handle_client(socket, &mut test_socket).await;
     }
 
-
     //Ok(())
+}
+
+async fn gui() -> iced::Result {
+  Model::run(
+    Settings {
+      window: iced::window::Settings {
+        size: (300, 200),
+        ..Default::default()
+      },
+      ..Default::default()
+    }
+  )
 }
