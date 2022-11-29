@@ -7,6 +7,6 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1.21.0", features = ["full"] }
-async-trait = "0.1.57"
-iced = { version = "0.4" } 
+tokio = { version = "1.22.0", features = ["full"] }
+async-trait = "0.1.59"
+iced = { version = "0.5.2" } 

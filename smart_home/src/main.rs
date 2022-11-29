@@ -1,4 +1,3 @@
-
 use smart_home_lib::homes::{home::Home, rooms::units::unit_builder::UnitBuilder};
 
 use smart_home_lib::homes::rooms::units::unit_visitor::{
