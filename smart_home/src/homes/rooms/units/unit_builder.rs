@@ -2,8 +2,6 @@ use std::net::{SocketAddrV4, Ipv4Addr};
 
 use super::{unit::SmartHomeUnit, socket::Socket, thermometer::Thermometer};
 
-
-
 pub struct UnitBuilder {
   pub unit_type: &'static str,
   pub name: &'static str,

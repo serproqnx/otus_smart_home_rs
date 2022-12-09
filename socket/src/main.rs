@@ -3,30 +3,24 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 //use std::io::prelude::*;
 use std::net::{Ipv4Addr, SocketAddrV4};
-use std::sync::{Arc, Mutex};
+//use std::sync::{Arc, Mutex};
 
-use iced::{ Element, Sandbox, Settings};
-use iced::widget::{Column, button, Button, Text};
-//Model
-//View
-//Message
-//Update
-
-#[derive(Debug, Clone)]
-enum Message {
-  //Increment,
-  //Decrement,
-  TurnOn,
-  TurnOff,
-}
+use iced::widget::{button, column, text};
+use iced::{Alignment, Element, Sandbox, Settings};
 
 struct Model {
   //counter: i64,
   //button_inc: button::State,
   //button_dec: button::State,
-  button_turn_on: button,
-  button_turn_off: State,
+  button_turn_on: String,
+  button_turn_off: String,
   report: String,
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Message {
+  TurnOn,
+  TurnOff,
 }
 
 impl Sandbox for Model {
@@ -34,9 +28,6 @@ impl Sandbox for Model {
 
   fn new() -> Self {
     Self {
-      //counter: 42,
-      //button_inc: Default::default(),
-      //button_dec: Default::default(),
       button_turn_on: Default::default(),
       button_turn_off: Default::default(),
       report: "Test_report".to_string(),
@@ -56,27 +47,29 @@ impl Sandbox for Model {
     }
   }
 
-  fn view(&mut self) -> Element<'_, Self::Message> {
-    //let text = Text::new(self.counter.to_string()).size(60);
+  fn view(&self) -> Element<'_, Self::Message> {
 
-    //let button_inc = Button::new(&mut self.button_inc, Text::new("Increment")).on_press(Message::Increment);
-    //let button_dec = Button::new(&mut self.button_dec, Text::new("Decrement")).on_press(Message::Decrement);
 
-    let report = Text::new(self.report.to_string()).size(20);
-    let button_turn_on =
-      Button::new(&mut self.button_turn_on, Text::new("Turn on")).on_press(Message::TurnOn);
-    let button_turn_off =
-      Button::new(&mut self.button_turn_off, Text::new("Turn off")).on_press(Message::TurnOff);
+    //let report = Text::new(self.report.to_string()).size(20);
+    //let button_turn_on =
+    //  Button::new(&mut self.button_turn_on, Text::new("Turn on")).on_press(Message::TurnOn);
+    //let button_turn_off =
+    //  Button::new(&mut self.button_turn_off, Text::new("Turn off")).on_press(Message::TurnOff);
 
-    Column::new()
-      .padding(20)
-      .push(report)
-      .push(button_turn_on)
-      .push(button_turn_off)
-      //.push(text)
-      //.push(button_inc)
-      //.push(button_dec)
-      .into()
+    column![
+      button("TurnOn").on_press(Message::TurnOn),
+      text(self.report.to_string()).size(20),
+      button("Decrement").on_press(Message::TurnOff)
+    ]
+    .padding(20)
+    .align_items(Alignment::Center)
+    //.push(self.report)
+    //.push(self.button_turn_on)
+    //.push(self.button_turn_off)
+    //.push(text)
+    //.push(button_inc)
+    //.push(button_dec)
+    .into()
   }
 }
 

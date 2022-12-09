@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 
-rand = "*"
-tokio = { version = "1.21.0", features = ["full"] }
-async-trait = "0.1.57"
+rand = "0.8.5"
+tokio = { version = "1.23.0", features = ["full"] }
+async-trait = "0.1.59"
