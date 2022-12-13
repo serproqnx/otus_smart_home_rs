@@ -58,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>  {
 home_1
   .rooms["kitchen1"]
   .devices["Socket_builder"]
-  .send_cmd("turnOn").await?;
+  .send_cmd("turnOff").await?;
 ////        .unwrap();
 //  
 //  home_1

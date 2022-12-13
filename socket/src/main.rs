@@ -5,15 +5,14 @@ use tokio::net::{TcpListener, TcpStream};
 use std::net::{Ipv4Addr, SocketAddrV4};
 //use std::sync::{Arc, Mutex};
 
+use std::sync::atomic::AtomicBool;
+
 use iced::widget::{button, column, text};
 use iced::{Alignment, Element, Sandbox, Settings};
 
 struct Model {
-  //counter: i64,
-  //button_inc: button::State,
-  //button_dec: button::State,
-  button_turn_on: String,
-  button_turn_off: String,
+  //button_turn_on: String,
+  //button_turn_off: String,
   report: String,
 }
 
@@ -22,14 +21,13 @@ enum Message {
   TurnOn,
   TurnOff,
 }
-
 impl Sandbox for Model {
   type Message = Message;
 
   fn new() -> Self {
     Self {
-      button_turn_on: Default::default(),
-      button_turn_off: Default::default(),
+   //   button_turn_on: Default::default(),
+    //  button_turn_off: Default::default(),
       report: "Test_report".to_string(),
     }
   }
@@ -40,35 +38,19 @@ impl Sandbox for Model {
 
   fn update(&mut self, message: Self::Message) {
     match message {
-      //Message::Increment => self.counter += 1,
-      //Message::Decrement => self.counter -= 1,
       Message::TurnOn => self.report = "Turned On".to_string(),
       Message::TurnOff => self.report = "Turned Off".to_string(),
     }
   }
 
   fn view(&self) -> Element<'_, Self::Message> {
-
-
-    //let report = Text::new(self.report.to_string()).size(20);
-    //let button_turn_on =
-    //  Button::new(&mut self.button_turn_on, Text::new("Turn on")).on_press(Message::TurnOn);
-    //let button_turn_off =
-    //  Button::new(&mut self.button_turn_off, Text::new("Turn off")).on_press(Message::TurnOff);
-
     column![
-      button("TurnOn").on_press(Message::TurnOn),
       text(self.report.to_string()).size(20),
+      button("TurnOn").on_press(Message::TurnOn),
       button("Decrement").on_press(Message::TurnOff)
     ]
     .padding(20)
     .align_items(Alignment::Center)
-    //.push(self.report)
-    //.push(self.button_turn_on)
-    //.push(self.button_turn_off)
-    //.push(text)
-    //.push(button_inc)
-    //.push(button_dec)
     .into()
   }
 }
@@ -76,26 +58,29 @@ impl Sandbox for Model {
 struct Socket {
   pub name: &'static str,
   pub about: &'static str,
-  pub on_status: bool,
+  pub on_status: AtomicBool,
   pub current_power_consumption: i32,
   pub ip: SocketAddrV4,
 }
 
 impl Socket {
   fn set_status_on(&mut self) -> String {
-    self.on_status = true;
+    *self.on_status.get_mut() = true;
     "Turned On".to_string()
   }
 
   fn set_status_off(&mut self) -> String {
-    self.on_status = false;
+    *self.on_status.get_mut() = false;
     "Turned Off".to_string()
   }
 
   fn get_report(&mut self) -> String {
     format!(
       "Name: {}, About: {}, On_status: {}, current_power_consumption: {}",
-      self.name, self.about, self.on_status, self.current_power_consumption,
+      self.name, 
+      self.about, 
+      self.on_status.load(std::sync::atomic::Ordering::SeqCst), 
+      self.current_power_consumption,
     )
   }
 }
@@ -131,7 +116,9 @@ async fn handle_client(mut stream: TcpStream, device: &mut Socket) {
 #[tokio::main]
 //async fn main() -> io::Result<()> {
 async fn main() -> iced::Result {
-  let t_net = tokio::spawn(async move { net().await });
+  let mut power_status = AtomicBool::new(true);
+
+  let t_net = tokio::spawn(async move { net(power_status).await });
 
   Model::run(Settings {
     window: iced::window::Settings {
@@ -143,15 +130,14 @@ async fn main() -> iced::Result {
   .unwrap();
 
   t_net.await.unwrap().unwrap();
-
   Ok(())
 }
 
-async fn net() -> io::Result<()> {
+async fn net(pwr_stat: AtomicBool) -> io::Result<()> {
   let mut test_socket: Socket = Socket {
     name: "Socket1",
     about: "Real Socket 1",
-    on_status: false,
+    on_status: pwr_stat,
     current_power_consumption: 42,
     ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
   };
@@ -165,15 +151,3 @@ async fn net() -> io::Result<()> {
     handle_client(socket, &mut test_socket).await;
   }
 }
-
-//async fn gui() -> iced::Result {
-//Model::run(
-//Settings {
-//window: iced::window::Settings {
-//size: (300, 200),
-//..Default::default()
-//},
-//..Default::default()
-//}
-//)
-//}
