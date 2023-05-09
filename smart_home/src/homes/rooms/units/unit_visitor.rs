@@ -1,3 +1,4 @@
+
 use super::{socket::Socket, thermometer::Thermometer, unit::SmartHomeUnit};
 
 pub trait Report {

@@ -1,21 +1,17 @@
 use async_trait::async_trait;
-use tokio::net::TcpStream;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::TcpStream;
 
 //use std::io::prelude::*;
+use super::error::{NetError, SmartHomeError};
+use super::unit_visitor::Visitor;
+use crate::homes::rooms::units::error::ConnectResult;
+use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
 use std::io;
 use std::net::UdpSocket;
 
-use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
-
-use crate::homes::rooms::units::error::ConnectResult;
-use super::error::NetError;
-use super::unit_visitor::Visitor;
-
-
-
 #[async_trait]
-pub trait SmartHomeUnit { 
+pub trait SmartHomeUnit {
   // fn new(name: &'static str) -> Self;
   fn get_name(&self) -> &'static str;
   fn get_bool_on_status(&self) -> bool;
@@ -72,9 +68,9 @@ impl SmartHomeUnit for Socket {
     Some(report)
   }
 
-  async fn turn_on(&self) -> io::Result<()> {
-    self.send_cmd("turnOn").await.unwrap(); 
-    Ok(()) 
+  async fn turn_on(&self) -> Result<(), SmartHomeError> {
+    self.send_cmd("turnOn").await.map_err(SmartHomeError::CustomError)?;
+    Ok(())
   }
 
   async fn turn_off(&self) -> io::Result<()> {
@@ -85,7 +81,7 @@ impl SmartHomeUnit for Socket {
   async fn send_cmd(&self, cmd: &'static str) -> ConnectResult<()> {
     let mut stream = TcpStream::connect(self.ip).await?;
 
-    let data = cmd; 
+    let data = cmd;
 
     let len = data.len() as u32;
     let len_bytes = len.to_be_bytes();
@@ -96,12 +92,12 @@ impl SmartHomeUnit for Socket {
     let mut device_response = [0; 4];
     stream.read_exact(&mut device_response).await?;
     let resp_len = u32::from_be_bytes(device_response);
-    
+
     let mut device_response = vec![0; resp_len as _];
     stream.read_exact(&mut device_response).await?;
     println!("Response: {}", String::from_utf8_lossy(&device_response));
 
-    Ok(()) 
+    Ok(())
   }
 
   async fn get_report(&self) -> io::Result<()> {
@@ -124,12 +120,10 @@ impl SmartHomeUnit for Thermometer {
     self.on_status
   }
 
-
   fn turn_on_off(&mut self) {
     self.on_status = !&self.on_status;
     println!("{} turned {}", self.name, self.get_on_status());
   }
-    
 
   fn get_about(&self) -> &'static str {
     // println!("{}", self.about);
@@ -159,19 +153,19 @@ impl SmartHomeUnit for Thermometer {
   async fn turn_on(&self) -> io::Result<()> {
     Ok(())
   }
- 
+
   async fn turn_off(&self) -> io::Result<()> {
     Ok(())
-  } 
+  }
 
   async fn send_cmd(&self, _cmd: &'static str) -> Result<(), NetError> {
-    
     let socket = UdpSocket::bind("127.0.0.1:34254").expect("couldn't bind to adress");
-    
 
     let send_buf: [u8; 10] = [9, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-    socket.send_to(&send_buf, "127.0.0.1:8182").expect("couldn't send data");
-    
+    socket
+      .send_to(&send_buf, "127.0.0.1:8182")
+      .expect("couldn't send data");
+
     let mut buf = [0; 10];
     let (amt, src_addr) = socket.recv_from(&mut buf)?;
     let buf = &mut buf[..amt];
@@ -195,7 +189,7 @@ impl SmartHomeUnit for Thermometer {
 mod tests {
   use super::*;
 
-  use std::net::{SocketAddrV4, Ipv4Addr};
+  use std::net::{Ipv4Addr, SocketAddrV4};
   #[test]
   fn create_smarthomeunit_socket() {
     let mut new_socket = Socket {
@@ -205,7 +199,6 @@ mod tests {
       current_power_consumption: 1,
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
-
 
     assert_eq!(new_socket.name, "1");
     assert!(new_socket.on_status);
@@ -234,7 +227,6 @@ mod tests {
       current_temperature: 1,
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
-
 
     assert_eq!(new_therm.name, "1");
     assert!(new_therm.on_status);
