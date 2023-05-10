@@ -3,11 +3,12 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
 //use std::io::prelude::*;
-use super::error::{NetError, SmartHomeError};
+// use super::error::{NetError, SmartHomeError};
+use super::error::NetError;
 use super::unit_visitor::Visitor;
 use crate::homes::rooms::units::error::ConnectResult;
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
-use std::io;
+// use std::io;
 use std::net::UdpSocket;
 
 #[async_trait]
@@ -20,10 +21,10 @@ pub trait SmartHomeUnit {
   fn get_on_status(&self) -> &'static str;
   fn get_device_report(&self) -> Option<String>;
 
-  async fn turn_on(&self) -> io::Result<()>;
-  async fn turn_off(&self) -> io::Result<()>;
+  async fn turn_on(&self) -> ConnectResult<()>;
+  async fn turn_off(&self) -> ConnectResult<()>;
   async fn send_cmd(&self, cmd: &'static str) -> ConnectResult<()>;
-  async fn get_report(&self) -> io::Result<()>;
+  async fn get_report(&self) -> ConnectResult<()>;
 
   fn accept(&mut self, v: &dyn Visitor);
 }
@@ -68,13 +69,13 @@ impl SmartHomeUnit for Socket {
     Some(report)
   }
 
-  async fn turn_on(&self) -> Result<(), SmartHomeError> {
-    self.send_cmd("turnOn").await.map_err(SmartHomeError::CustomError)?;
+  async fn turn_on(&self) -> ConnectResult<()> {
+    self.send_cmd("turnOn").await?;
     Ok(())
   }
 
-  async fn turn_off(&self) -> io::Result<()> {
-    self.send_cmd("turnOff").await.unwrap();
+  async fn turn_off(&self) -> ConnectResult<()> {
+    self.send_cmd("turnOff").await?;
     Ok(())
   }
 
@@ -100,8 +101,8 @@ impl SmartHomeUnit for Socket {
     Ok(())
   }
 
-  async fn get_report(&self) -> io::Result<()> {
-    self.send_cmd("report").await.unwrap();
+  async fn get_report(&self) -> ConnectResult<()> {
+    self.send_cmd("report").await?;
     Ok(())
   }
 
@@ -150,15 +151,15 @@ impl SmartHomeUnit for Thermometer {
     Some(report)
   }
 
-  async fn turn_on(&self) -> io::Result<()> {
+  async fn turn_on(&self) -> ConnectResult<()> {
     Ok(())
   }
 
-  async fn turn_off(&self) -> io::Result<()> {
+  async fn turn_off(&self) -> ConnectResult<()> {
     Ok(())
   }
 
-  async fn send_cmd(&self, _cmd: &'static str) -> Result<(), NetError> {
+  async fn send_cmd(&self, _cmd: &'static str) -> ConnectResult<()> {
     let socket = UdpSocket::bind("127.0.0.1:34254").expect("couldn't bind to adress");
 
     let send_buf: [u8; 10] = [9, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -176,7 +177,7 @@ impl SmartHomeUnit for Thermometer {
     Ok(())
   }
 
-  async fn get_report(&self) -> io::Result<()> {
+  async fn get_report(&self) -> ConnectResult<()> {
     Ok(())
   }
 

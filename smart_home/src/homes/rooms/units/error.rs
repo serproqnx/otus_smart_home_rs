@@ -3,6 +3,8 @@ use std::io;
 
 pub type ConnectResult<T> = Result<T, NetError>;
 
+// pub type SmartHomeResult<T> = Result<T, CustomError>;
+
 #[derive(Error, Debug)]
 pub enum NetError {
   #[error("Net Error: {0}")]

@@ -21,6 +21,7 @@ enum Message {
   TurnOn,
   TurnOff,
 }
+
 impl Sandbox for Model {
   type Message = Message;
 
@@ -46,8 +47,8 @@ impl Sandbox for Model {
   fn view(&self) -> Element<'_, Self::Message> {
     column![
       text(self.report.to_string()).size(20),
-      button("TurnOn").on_press(Message::TurnOn),
-      button("Decrement").on_press(Message::TurnOff)
+      button("On").on_press(Message::TurnOn),
+      button("Off").on_press(Message::TurnOff)
     ]
     .padding(20)
     .align_items(Alignment::Center)
