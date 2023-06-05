@@ -58,7 +58,7 @@ async fn main() -> Result<(), SmartHomeError> {
   home_1.rooms["kitchen1"].devices["Socket_builder"]
     .send_cmd("turnOff")
     .await
-    .map_err(|e| SmartHomeError::OperationError(format!("Failed to send command: {}", e)))?;
+    .map_err(|e| SmartHomeError::DeviceError(format!("Failed to send command: {}", e)))?;
 
   Ok(())
 }

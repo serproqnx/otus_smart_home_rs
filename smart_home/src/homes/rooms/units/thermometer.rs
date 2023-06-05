@@ -19,8 +19,8 @@ impl Thermometer {
 #[cfg(test)]
 mod tests {
 
-  use std::net::{SocketAddrV4, Ipv4Addr};
   use super::Thermometer;
+  use std::net::{Ipv4Addr, SocketAddrV4};
 
   #[test]
   fn create_thermometer() {

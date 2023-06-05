@@ -1,10 +1,13 @@
+mod error;
+
+use error::{ThermoErr, ThermoError};
 use tokio::net::UdpSocket;
 
 //use std::net::UdpSocket;
+use rand::prelude::*;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
-use rand::prelude::*;
 
 struct Thermometer {
   temp: Arc<Mutex<i32>>,
@@ -16,8 +19,7 @@ impl Thermometer {
     let mut rng = thread_rng();
 
     loop {
-      
-      *cur_temp.lock().unwrap() += rng.gen_range( -1..2 );
+      *cur_temp.lock().unwrap() += rng.gen_range(-1..2);
 
       println!("TEMP: {:?}", *self.temp.lock().unwrap());
       //println!("TEMP: {:?}", test_temp);
@@ -27,24 +29,35 @@ impl Thermometer {
 }
 
 #[tokio::main]
-async fn main() {
-
+async fn main() -> ThermoErr<()> {
   let mut trm: Thermometer = Thermometer {
     temp: Arc::new(Mutex::new(0)),
   };
 
   let temp_arc = Arc::clone(&trm.temp);
-  let t_temp = tokio::spawn( async move { trm.gen_temp().await });
-  let socket = UdpSocket::bind("127.0.0.1:8182").await.expect("couldn't bind to adress");
+  let t_temp = tokio::spawn(async move { trm.gen_temp().await });
+  // let socket = UdpSocket::bind("127.0.0.1:8182").await.expect("couldn't bind to adress");
+  let socket = UdpSocket::bind("127.0.0.1:8182")
+    .await
+    .map_err(ThermoError::UdpAdressBindError)?;
 
   let mut count = 0i32;
 
   loop {
     count += 1;
     let mut buf = [0; 10];
-    let (number_of_bytes, src_addr) = socket.recv_from(&mut buf).await.expect("Didn't recieve data");
+    let (number_of_bytes, src_addr) = socket
+      .recv_from(&mut buf)
+      .await
+      .map_err(ThermoError::UdpRecieveDataError)?;
+    // .expect("Didn't recieve data");
 
-    socket.connect(&src_addr).await.expect("connection fail");
+    socket
+      .connect(&src_addr)
+      .await
+      .map_err(ThermoError::UdpConnectionFailError)?;
+    // .expect("connection fail");
+
     let buf = &mut buf[..number_of_bytes];
 
     println!("{:?}", &buf);
@@ -54,13 +67,18 @@ async fn main() {
     println!("Addr: {:?}, Buf: {:?}", &src_addr, &buf);
     println!("{:?}", temp_bytes);
 
-    socket.send_to(temp_bytes, &src_addr).await.expect("couldn't send data");
+    socket
+      .send_to(temp_bytes, &src_addr)
+      .await
+      .map_err(ThermoError::UdpSendDataError)
+      .expect("couldn't send data");
 
     if count == 100 {
       break;
     };
-
   }
 
   t_temp.await.unwrap();
+
+  Ok(())
 }

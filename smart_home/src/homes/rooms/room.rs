@@ -1,10 +1,13 @@
-use std::{collections::HashMap, net::{SocketAddrV4, Ipv4Addr}};
+use std::{
+  collections::HashMap,
+  net::{Ipv4Addr, SocketAddrV4},
+};
 
 use crate::homes::rooms::units::{
-    socket::Socket, 
-    thermometer::Thermometer, 
-    unit::SmartHomeUnit,
-    //unit::UnitBuilder,
+  socket::Socket,
+  thermometer::Thermometer,
+  unit::SmartHomeUnit,
+  //unit::UnitBuilder,
 };
 
 pub struct Room {
@@ -24,8 +27,8 @@ impl Room {
     self.devices.remove(name)
   }
 
-  pub fn add_device( &mut self, device: Box<dyn SmartHomeUnit> ) {
-    self.devices.insert( device.get_name(), device );
+  pub fn add_device(&mut self, device: Box<dyn SmartHomeUnit>) {
+    self.devices.insert(device.get_name(), device);
   }
 
   pub fn add_device_thermometer(&mut self, name: &'static str) {

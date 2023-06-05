@@ -1,23 +1,15 @@
 use thiserror::Error;
-use std::io;
 
-pub type ConnectResult<T> = Result<T, NetError>;
-
-// pub type SmartHomeResult<T> = Result<T, CustomError>;
-
-#[derive(Error, Debug)]
-pub enum NetError {
-  #[error("Net Error: {0}")]
-  Turnonsocket(#[from] io::Error),
-}
+pub type SHResult<T> = Result<T, SmartHomeError>;
 
 #[derive(Error, Debug)]
 pub enum SmartHomeError {
-    #[error("Failed to perform an operation: {0}")]
-    OperationError(String),
-    // Add other error variants as needed
-    #[error("Custom error: {0}")]
-    CustomError(String),
+  #[error("Device error: {0}")]
+  DeviceError(String),
+
+  #[error("TcpStream error: {0}")]
+  TcpStreamError(#[source] std::io::Error),
+
+  #[error("UdpSocketError error: {0}")]
+  UdpSocketError(#[source] std::io::Error),
 }
-
-

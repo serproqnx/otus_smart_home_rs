@@ -1,14 +1,12 @@
-use std::io;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::net::{TcpListener, TcpStream};
-//use std::io::prelude::*;
-use std::net::{Ipv4Addr, SocketAddrV4};
-//use std::sync::{Arc, Mutex};
+mod error;
 
-use std::sync::atomic::AtomicBool;
-
+use crate::error::{SocketErr, SocketError};
 use iced::widget::{button, column, text};
 use iced::{Alignment, Element, Sandbox, Settings};
+use std::net::{Ipv4Addr, SocketAddrV4};
+use std::sync::atomic::AtomicBool;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::net::{TcpListener, TcpStream};
 
 struct Model {
   //button_turn_on: String,
@@ -27,8 +25,8 @@ impl Sandbox for Model {
 
   fn new() -> Self {
     Self {
-   //   button_turn_on: Default::default(),
-    //  button_turn_off: Default::default(),
+      //   button_turn_on: Default::default(),
+      //  button_turn_off: Default::default(),
       report: "Test_report".to_string(),
     }
   }
@@ -78,23 +76,31 @@ impl Socket {
   fn get_report(&mut self) -> String {
     format!(
       "Name: {}, About: {}, On_status: {}, current_power_consumption: {}",
-      self.name, 
-      self.about, 
-      self.on_status.load(std::sync::atomic::Ordering::SeqCst), 
+      self.name,
+      self.about,
+      self.on_status.load(std::sync::atomic::Ordering::SeqCst),
       self.current_power_consumption,
     )
   }
 }
 
-async fn handle_client(mut stream: TcpStream, device: &mut Socket) {
+async fn handle_client(mut stream: TcpStream, device: &mut Socket) -> SocketErr<()> {
   // Request
 
   let mut request = [0; 4];
-  stream.read_exact(&mut request).await.unwrap();
+  // stream.read_exact(&mut request).await.unwrap();
+  stream
+    .read_exact(&mut request)
+    .await
+    .map_err(SocketError::TcpReadError)?;
+
   let req_len = u32::from_be_bytes(request);
 
   let mut request = vec![0; req_len as _];
-  stream.read_exact(&mut request).await.unwrap();
+  stream
+    .read_exact(&mut request)
+    .await
+    .map_err(SocketError::TcpReadError)?;
 
   // Response
 
@@ -108,16 +114,25 @@ async fn handle_client(mut stream: TcpStream, device: &mut Socket) {
   let bytes = data.as_bytes();
   let len = bytes.len() as u32;
   let len_bytes = len.to_be_bytes();
-  stream.write_all(&len_bytes).await.unwrap();
-  stream.write_all(bytes).await.unwrap();
+  stream
+    .write_all(&len_bytes)
+    .await
+    .map_err(SocketError::TcpWriteError)?;
+
+  stream
+    .write_all(bytes)
+    .await
+    .map_err(SocketError::TcpWriteError)?;
 
   println!("Request: {}", String::from_utf8_lossy(&request[..]));
+
+  Ok(())
 }
 
 #[tokio::main]
 //async fn main() -> io::Result<()> {
 async fn main() -> iced::Result {
-  let mut power_status = AtomicBool::new(true);
+  let power_status = AtomicBool::new(true);
 
   let t_net = tokio::spawn(async move { net(power_status).await });
 
@@ -134,7 +149,7 @@ async fn main() -> iced::Result {
   Ok(())
 }
 
-async fn net(pwr_stat: AtomicBool) -> io::Result<()> {
+async fn net(pwr_stat: AtomicBool) -> SocketErr<()> {
   let mut test_socket: Socket = Socket {
     name: "Socket1",
     about: "Real Socket 1",
@@ -145,10 +160,17 @@ async fn net(pwr_stat: AtomicBool) -> io::Result<()> {
 
   println!("SOCKET: {:?}", test_socket.ip);
 
-  let listener = TcpListener::bind(test_socket.ip).await?;
+  let listener = TcpListener::bind(test_socket.ip)
+    .await
+    .map_err(SocketError::TcpError)?;
 
   loop {
-    let (socket, _) = listener.accept().await?;
-    handle_client(socket, &mut test_socket).await;
+    let (socket, _) = listener.accept().await.map_err(|error| SocketError::TcpError(error))?;
+
+    handle_client(socket, &mut test_socket)
+      .await
+      .map_err(|e| SocketError::TcpError(e))?;
   }
+
+  // Ok(())
 }

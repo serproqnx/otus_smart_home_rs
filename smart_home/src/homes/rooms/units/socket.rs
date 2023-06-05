@@ -14,18 +14,17 @@ pub struct Socket {
 impl Socket {
   pub fn builder() -> UnitBuilder {
     UnitBuilder::default()
-  } 
+  }
 
   pub fn get_current_power_consumption(&self) -> i32 {
     self.current_power_consumption
   }
-
 }
 
 #[cfg(test)]
 mod tests {
-  use std::net::Ipv4Addr;
   use super::*;
+  use std::net::Ipv4Addr;
 
   #[test]
   fn create_socket() {
@@ -36,7 +35,6 @@ mod tests {
       current_power_consumption: 21,
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8182),
     };
-
 
     assert_eq!("127.0.0.1:8182".parse(), Ok(test_socket.ip));
     assert_eq!(test_socket.ip.ip(), &Ipv4Addr::new(127, 0, 0, 1));

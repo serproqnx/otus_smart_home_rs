@@ -1,4 +1,3 @@
-
 use super::{socket::Socket, thermometer::Thermometer, unit::SmartHomeUnit};
 
 pub trait Report {
@@ -56,9 +55,9 @@ pub struct TurnOnVisitor;
 
 impl Visitor for TurnOnVisitor {
   fn visit_socket(&self, unit: &mut Socket) {
-    unit.turn_on();
+    let _ = unit.turn_on();
   }
   fn visit_thermometer(&self, unit: &mut Thermometer) {
-    unit.turn_on();
+    let _ = unit.turn_on();
   }
 }
