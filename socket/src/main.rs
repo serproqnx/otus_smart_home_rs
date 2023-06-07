@@ -1,8 +1,14 @@
 mod error;
 
 use crate::error::{SocketErr, SocketError};
-use iced::widget::{button, column, text};
-use iced::{Alignment, Element, Sandbox, Settings};
+
+use iced::{executor, Application, Command, Element, Settings, Text};
+use iced::subscription::Interval;
+use std::time::Duration;
+
+// use iced::widget::{button, column, text};
+// use iced::{Alignment, Element, Sandbox, Settings};
+
 use std::net::{Ipv4Addr, SocketAddrV4};
 use std::sync::atomic::AtomicBool;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -12,22 +18,28 @@ struct Model {
   //button_turn_on: String,
   //button_turn_off: String,
   report: String,
+  count: usize,
 }
 
 #[derive(Debug, Clone, Copy)]
 enum Message {
   TurnOn,
   TurnOff,
+  Tick,
 }
 
-impl Sandbox for Model {
-  type Message = Message;
+impl Application for Model {
+  type Executor = Executor;
+  type Message = Debug + Send;
+  type Theme: Default + StyleSheet;
+  type Flags = ();
 
   fn new() -> Self {
     Self {
       //   button_turn_on: Default::default(),
       //  button_turn_off: Default::default(),
       report: "Test_report".to_string(),
+      count: 0,
     }
   }
 
@@ -39,6 +51,9 @@ impl Sandbox for Model {
     match message {
       Message::TurnOn => self.report = "Turned On".to_string(),
       Message::TurnOff => self.report = "Turned Off".to_string(),
+      Message::Tick => {
+        self.count = self.count += 1;
+      }
     }
   }
 
@@ -167,8 +182,7 @@ async fn net(pwr_stat: AtomicBool) -> SocketErr<()> {
   loop {
     let (socket, _) = listener.accept().await.map_err(SocketError::TcpError)?;
 
-    handle_client(socket, &mut test_socket)
-      .await?
+    handle_client(socket, &mut test_socket).await?
   }
   // Ok(())
 }
