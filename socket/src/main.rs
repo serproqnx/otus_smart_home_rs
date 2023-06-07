@@ -165,12 +165,10 @@ async fn net(pwr_stat: AtomicBool) -> SocketErr<()> {
     .map_err(SocketError::TcpError)?;
 
   loop {
-    let (socket, _) = listener.accept().await.map_err(|error| SocketError::TcpError(error))?;
+    let (socket, _) = listener.accept().await.map_err(SocketError::TcpError)?;
 
     handle_client(socket, &mut test_socket)
-      .await
-      .map_err(|e| SocketError::TcpError(e))?;
+      .await?
   }
-
   // Ok(())
 }

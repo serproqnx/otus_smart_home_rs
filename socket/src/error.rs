@@ -12,5 +12,5 @@ pub enum SocketError {
     TcpWriteError(#[source] std::io::Error),
 
     #[error("TCP error: {0}")]
-    TcpError(#[source] std::io::Error),
+    TcpError(#[from] std::io::Error),
 }
