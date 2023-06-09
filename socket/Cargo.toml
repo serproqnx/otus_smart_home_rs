@@ -10,5 +10,5 @@ resolver = "2"
 tokio = { version = "1.28.0", features = ["full"] }
 
 async-trait = "0.1.68"
-iced = { version = "0.9.0" } 
+iced = { version = "0.9.0", features = ["smol"] } 
 thiserror = { version = "1.0" }

@@ -1,16 +1,27 @@
 mod error;
 
+
+
+use iced::Settings;
+use iced::Theme;
+use iced::Element;
+use iced::Command;
+use iced::Application;
+use iced::executor;
+
+use iced::time;
+use iced::widget::Text;
+use iced::Subscription;
 use crate::error::{SocketErr, SocketError};
 
-use iced::{executor, Application, Command, Element, Settings, Text};
-use iced::subscription::Interval;
-use std::time::Duration;
+use std::net::{Ipv4Addr, SocketAddrV4};
 
 // use iced::widget::{button, column, text};
 // use iced::{Alignment, Element, Sandbox, Settings};
 
-use std::net::{Ipv4Addr, SocketAddrV4};
 use std::sync::atomic::AtomicBool;
+use std::time::Duration;
+// use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
@@ -29,44 +40,73 @@ enum Message {
 }
 
 impl Application for Model {
-  type Executor = Executor;
-  type Message = Debug + Send;
-  type Theme: Default + StyleSheet;
+  type Executor = executor::Default;
+  type Message = Message;
+  type Theme = Theme;
+
+  // type Theme: Default + StyleSheet;
   type Flags = ();
 
-  fn new() -> Self {
-    Self {
-      //   button_turn_on: Default::default(),
-      //  button_turn_off: Default::default(),
-      report: "Test_report".to_string(),
-      count: 0,
-    }
+  fn new(_flags: ()) -> (Model, Command<Message>) {
+    (
+      Model {
+        report: "Test_report".to_string(),
+        count: 0,
+      },
+      Command::none(),
+    )
   }
 
   fn title(&self) -> String {
     "Socket".into()
   }
 
-  fn update(&mut self, message: Self::Message) {
+  fn update(&mut self, message: Message) -> Command<Message> {
     match message {
       Message::TurnOn => self.report = "Turned On".to_string(),
       Message::TurnOff => self.report = "Turned Off".to_string(),
       Message::Tick => {
-        self.count = self.count += 1;
+        self.count += 1;
       }
     }
+
+    Command::none()
   }
 
-  fn view(&self) -> Element<'_, Self::Message> {
-    column![
-      text(self.report.to_string()).size(20),
-      button("On").on_press(Message::TurnOn),
-      button("Off").on_press(Message::TurnOff)
-    ]
-    .padding(20)
-    .align_items(Alignment::Center)
-    .into()
+  fn view(&self) -> Element<Message> {
+    // column![
+    //   text(self.report.to_string()).size(20),
+    //   button("On").on_press(Message::TurnOn),
+    //   button("Off").on_press(Message::TurnOff)
+    // ]
+    // .padding(20)
+    // .align_items(Alignment::Center)
+    // .into()
+
+    Text::new(format!("Count: {}", self.count)).into()
   }
+
+  // fn style(&self) -> <Self::Theme as iced::application::StyleSheet>::Style {
+  //   <Self::Theme as iced::application::StyleSheet>::Style::default()
+  // }
+
+  fn theme(&self) -> Self::Theme {
+    Self::Theme::default()
+  }
+
+  fn style(&self) -> <Self::Theme as iced::application::StyleSheet>::Style {
+    <Self::Theme as iced::application::StyleSheet>::Style::default()
+  }
+
+  fn subscription(&self) -> iced::Subscription<Message> {
+    // Subscription::from_recipe(Duration::from_secs(1)).map(Message::Tick)
+    time::every(Duration::from_secs(1)).map(|_| Message::Tick)
+  }
+
+  fn scale_factor(&self) -> f64 {
+    2.0
+  }
+
 }
 
 struct Socket {
@@ -151,14 +191,7 @@ async fn main() -> iced::Result {
 
   let t_net = tokio::spawn(async move { net(power_status).await });
 
-  Model::run(Settings {
-    window: iced::window::Settings {
-      size: (300, 300),
-      ..Default::default()
-    },
-    ..Default::default()
-  })
-  .unwrap();
+  let _ = Model::run(Settings::default());
 
   t_net.await.unwrap().unwrap();
   Ok(())
