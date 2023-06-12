@@ -1,18 +1,21 @@
 mod error;
 
-
-
+use iced::widget::Button;
+use iced::widget::Column;
+use iced::executor;
+use iced::Alignment;
+use iced::Application;
+use iced::Command;
+use iced::Element;
 use iced::Settings;
 use iced::Theme;
-use iced::Element;
-use iced::Command;
-use iced::Application;
-use iced::executor;
 
+use iced::widget::column;
+
+use crate::error::{SocketErr, SocketError};
 use iced::time;
 use iced::widget::Text;
 use iced::Subscription;
-use crate::error::{SocketErr, SocketError};
 
 use std::net::{Ipv4Addr, SocketAddrV4};
 
@@ -20,6 +23,7 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 // use iced::{Alignment, Element, Sandbox, Settings};
 
 use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
 use std::time::Duration;
 // use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -28,6 +32,7 @@ use tokio::net::{TcpListener, TcpStream};
 struct Model {
   //button_turn_on: String,
   //button_turn_off: String,
+  status: AtomicBool,
   report: String,
   count: usize,
 }
@@ -50,6 +55,7 @@ impl Application for Model {
   fn new(_flags: ()) -> (Model, Command<Message>) {
     (
       Model {
+        status: power_status,
         report: "Test_report".to_string(),
         count: 0,
       },
@@ -63,7 +69,10 @@ impl Application for Model {
 
   fn update(&mut self, message: Message) -> Command<Message> {
     match message {
-      Message::TurnOn => self.report = "Turned On".to_string(),
+      Message::TurnOn => { 
+        self.report = "Turned On".to_string();
+        self.status = AtomicBool::new(true);
+      },
       Message::TurnOff => self.report = "Turned Off".to_string(),
       Message::Tick => {
         self.count += 1;
@@ -73,9 +82,16 @@ impl Application for Model {
     Command::none()
   }
 
-  fn view(&self) -> Element<Message> {
+  fn view(&self) -> Element<Self::Message> {
+    Column::new()
+      .push(Text::new(format!("Count: {}", self.count)).size(20))
+      .push(Text::new(format!("Status: {}", self.status.load(Ordering::Relaxed))).size(20))
+      .push(Button::new("On").on_press(Message::TurnOn))
+      .push(Button::new("Off").on_press(Message::TurnOff))
+      .into()
+
     // column![
-    //   text(self.report.to_string()).size(20),
+    //   text(format!("Count: {}", self.count)).size(20),
     //   button("On").on_press(Message::TurnOn),
     //   button("Off").on_press(Message::TurnOff)
     // ]
@@ -83,7 +99,7 @@ impl Application for Model {
     // .align_items(Alignment::Center)
     // .into()
 
-    Text::new(format!("Count: {}", self.count)).into()
+    // Text::new(format!("Count: {}", self.count)).into()
   }
 
   // fn style(&self) -> <Self::Theme as iced::application::StyleSheet>::Style {
@@ -98,7 +114,7 @@ impl Application for Model {
     <Self::Theme as iced::application::StyleSheet>::Style::default()
   }
 
-  fn subscription(&self) -> iced::Subscription<Message> {
+  fn subscription(&self) -> Subscription<Message> {
     // Subscription::from_recipe(Duration::from_secs(1)).map(Message::Tick)
     time::every(Duration::from_secs(1)).map(|_| Message::Tick)
   }
@@ -106,7 +122,6 @@ impl Application for Model {
   fn scale_factor(&self) -> f64 {
     2.0
   }
-
 }
 
 struct Socket {
