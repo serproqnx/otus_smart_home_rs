@@ -1,8 +1,8 @@
 mod error;
 
+use iced::executor;
 use iced::widget::Button;
 use iced::widget::Column;
-use iced::executor;
 use iced::Alignment;
 use iced::Application;
 use iced::Command;
@@ -28,6 +28,7 @@ use std::time::Duration;
 // use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
+// use std::net::{TcpListener, TcpStream};
 
 struct Model {
   //button_turn_on: String,
@@ -35,6 +36,34 @@ struct Model {
   status: AtomicBool,
   report: String,
   count: usize,
+  pub name: String,
+  pub about: String,
+  pub on_status: AtomicBool,
+  pub current_power_consumption: i32,
+  pub ip: SocketAddrV4,
+  connection_count: usize,
+}
+
+impl Model {
+  fn set_status_on(&mut self) -> String {
+    *self.on_status.get_mut() = true;
+    "Turned On".to_string()
+  }
+
+  fn set_status_off(&mut self) -> String {
+    *self.on_status.get_mut() = false;
+    "Turned Off".to_string()
+  }
+
+  fn get_report(&mut self) -> String {
+    format!(
+      "Name: {}, About: {}, On_status: {}, current_power_consumption: {}",
+      self.name,
+      self.about,
+      self.on_status.load(std::sync::atomic::Ordering::SeqCst),
+      self.current_power_consumption,
+    )
+  }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -42,6 +71,7 @@ enum Message {
   TurnOn,
   TurnOff,
   Tick,
+  ConnectionCount(usize),
 }
 
 impl Application for Model {
@@ -53,13 +83,21 @@ impl Application for Model {
   type Flags = ();
 
   fn new(_flags: ()) -> (Model, Command<Message>) {
+    let command = Command::perform(net(), Message::ConnectionCount);
     (
       Model {
-        status: power_status,
+        status: AtomicBool::new(false),
         report: "Test_report".to_string(),
         count: 0,
+        name: "Test_name".to_string(),
+        about: "Test_about".to_string(),
+        on_status: AtomicBool::new(false),
+        current_power_consumption: 42,
+        ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
+        connection_count: 0,
       },
       Command::none(),
+      // command,
     )
   }
 
@@ -69,13 +107,16 @@ impl Application for Model {
 
   fn update(&mut self, message: Message) -> Command<Message> {
     match message {
-      Message::TurnOn => { 
+      Message::TurnOn => {
         self.report = "Turned On".to_string();
         self.status = AtomicBool::new(true);
-      },
+      }
       Message::TurnOff => self.report = "Turned Off".to_string(),
       Message::Tick => {
         self.count += 1;
+      }
+      Message::ConnectionCount(count) => {
+        self.connection_count = count;
       }
     }
 
@@ -86,25 +127,11 @@ impl Application for Model {
     Column::new()
       .push(Text::new(format!("Count: {}", self.count)).size(20))
       .push(Text::new(format!("Status: {}", self.status.load(Ordering::Relaxed))).size(20))
+      .push(Text::new(format!("ConnectionCount: {}", self.connection_count)).size(20))
       .push(Button::new("On").on_press(Message::TurnOn))
       .push(Button::new("Off").on_press(Message::TurnOff))
       .into()
-
-    // column![
-    //   text(format!("Count: {}", self.count)).size(20),
-    //   button("On").on_press(Message::TurnOn),
-    //   button("Off").on_press(Message::TurnOff)
-    // ]
-    // .padding(20)
-    // .align_items(Alignment::Center)
-    // .into()
-
-    // Text::new(format!("Count: {}", self.count)).into()
   }
-
-  // fn style(&self) -> <Self::Theme as iced::application::StyleSheet>::Style {
-  //   <Self::Theme as iced::application::StyleSheet>::Style::default()
-  // }
 
   fn theme(&self) -> Self::Theme {
     Self::Theme::default()
@@ -167,6 +194,7 @@ async fn handle_client(mut stream: TcpStream, device: &mut Socket) -> SocketErr<
   let req_len = u32::from_be_bytes(request);
 
   let mut request = vec![0; req_len as _];
+
   stream
     .read_exact(&mut request)
     .await
@@ -200,37 +228,43 @@ async fn handle_client(mut stream: TcpStream, device: &mut Socket) -> SocketErr<
 }
 
 #[tokio::main]
-//async fn main() -> io::Result<()> {
 async fn main() -> iced::Result {
-  let power_status = AtomicBool::new(true);
+  // let power_status = AtomicBool::new(true);
 
-  let t_net = tokio::spawn(async move { net(power_status).await });
+  let t_net = tokio::spawn(async move { net().await });
 
   let _ = Model::run(Settings::default());
 
-  t_net.await.unwrap().unwrap();
+  t_net.await.unwrap();
   Ok(())
 }
 
-async fn net(pwr_stat: AtomicBool) -> SocketErr<()> {
+async fn net() -> usize {
   let mut test_socket: Socket = Socket {
     name: "Socket1",
     about: "Real Socket 1",
-    on_status: pwr_stat,
+    on_status: AtomicBool::new(false),
     current_power_consumption: 42,
     ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
   };
 
   println!("SOCKET: {:?}", test_socket.ip);
 
-  let listener = TcpListener::bind(test_socket.ip)
-    .await
-    .map_err(SocketError::TcpError)?;
+  let listener = TcpListener::bind(test_socket.ip).await.unwrap();
+  let mut connection_count = 0;
 
-  loop {
-    let (socket, _) = listener.accept().await.map_err(SocketError::TcpError)?;
-
-    handle_client(socket, &mut test_socket).await?
+  while let Ok((stream, _addr)) = listener.accept().await {
+    connection_count += 1;
+    handle_client(stream, &mut test_socket).await.unwrap()
   }
+
+  // loop {
+  //  let (stream, _addr) = listener.accept().await {
+  //   connection_count += 1;
+  //   handle_client(stream, &mut test_socket).await.unwrap()
+  // }
+  // }
+
+  connection_count
   // Ok(())
 }
