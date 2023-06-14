@@ -1,16 +1,15 @@
 mod error;
 
+use tokio::sync::mpsc;
 use iced::executor;
 use iced::widget::Button;
 use iced::widget::Column;
-use iced::Alignment;
 use iced::Application;
 use iced::Command;
 use iced::Element;
 use iced::Settings;
 use iced::Theme;
 
-use iced::widget::column;
 
 use crate::error::{SocketErr, SocketError};
 use iced::time;
@@ -66,12 +65,12 @@ impl Model {
   }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 enum Message {
   TurnOn,
   TurnOff,
   Tick,
-  ConnectionCount(usize),
+  ConnectionCount(usize, mpsc::Sender<usize>),
 }
 
 impl Application for Model {
@@ -83,7 +82,8 @@ impl Application for Model {
   type Flags = ();
 
   fn new(_flags: ()) -> (Model, Command<Message>) {
-    let command = Command::perform(net(), Message::ConnectionCount);
+    let (sender, mut reciever) = mpsc::channel(1);
+    let command = Command::perform(net(sender), Message::ConnectionCount);
     (
       Model {
         status: AtomicBool::new(false),
@@ -96,8 +96,8 @@ impl Application for Model {
         ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
         connection_count: 0,
       },
-      Command::none(),
-      // command,
+      // Command::none(),
+      command,
     )
   }
 
@@ -115,8 +115,9 @@ impl Application for Model {
       Message::Tick => {
         self.count += 1;
       }
-      Message::ConnectionCount(count) => {
+      Message::ConnectionCount(count, sender) => {
         self.connection_count = count;
+        Command::perform(async move { sender.send(count).await.unwrap() }, Message::ConnectionCount);
       }
     }
 
@@ -231,15 +232,21 @@ async fn handle_client(mut stream: TcpStream, device: &mut Socket) -> SocketErr<
 async fn main() -> iced::Result {
   // let power_status = AtomicBool::new(true);
 
-  let t_net = tokio::spawn(async move { net().await });
+  // let rt = Runtime::new().unwrap();
+
+  // let t_net = tokio::spawn(async move { net().await });
+
+  // rt.spawn(async {
+  //   Model::run(Settings::default());
+  // });
 
   let _ = Model::run(Settings::default());
 
-  t_net.await.unwrap();
+  // t_net.await.unwrap();
   Ok(())
 }
 
-async fn net() -> usize {
+async fn net(sender: mpsc::Sender<usize>) -> usize {
   let mut test_socket: Socket = Socket {
     name: "Socket1",
     about: "Real Socket 1",
@@ -251,10 +258,12 @@ async fn net() -> usize {
   println!("SOCKET: {:?}", test_socket.ip);
 
   let listener = TcpListener::bind(test_socket.ip).await.unwrap();
-  let mut connection_count = 0;
+  let mut connection_count = 1;
 
   while let Ok((stream, _addr)) = listener.accept().await {
     connection_count += 1;
+    sender.send(connection_count).await.unwrap();
+    // println!("{}", connection_count);
     handle_client(stream, &mut test_socket).await.unwrap()
   }
 
@@ -265,6 +274,7 @@ async fn net() -> usize {
   // }
   // }
 
-  connection_count
   // Ok(())
+  // println!("{}", connection_count);
+  connection_count
 }
