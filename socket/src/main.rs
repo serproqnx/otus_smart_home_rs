@@ -127,10 +127,9 @@ impl Application for Model {
       Message::TurnOff => self.report = "Turned Off".to_string(),
       Message::Tick => {
         self.count += 1;
-      }
-      // Message::ConnectionCount(count) => {
-      //   println!("UPDATE {}", self.connection_count.load(Ordering::SeqCst));
-      // }
+      } // Message::ConnectionCount(count) => {
+        //   println!("UPDATE {}", self.connection_count.load(Ordering::SeqCst));
+        // }
     }
 
     Command::none()
@@ -140,7 +139,13 @@ impl Application for Model {
     Column::new()
       .push(Text::new(format!("Count: {}", self.count)).size(20))
       .push(Text::new(format!("Status: {}", self.status.load(Ordering::Relaxed))).size(20))
-      .push(Text::new(format!("ConnectionCount: {}", self.connection_count.load(Ordering::SeqCst))).size(20))
+      .push(
+        Text::new(format!(
+          "ConnectionCount: {}",
+          self.connection_count.load(Ordering::SeqCst)
+        ))
+        .size(20),
+      )
       .push(Button::new("On").on_press(Message::TurnOn))
       .push(Button::new("Off").on_press(Message::TurnOff))
       .into()
@@ -173,7 +178,7 @@ struct Socket {
 }
 
 impl Socket {
-  fn set_status_on(&mut self) -> String {
+  fn set_status_on(&mut self, status: Arc<AtomicBool>) -> String {
     *self.on_status.get_mut() = true;
     "Turned On".to_string()
   }
@@ -194,7 +199,11 @@ impl Socket {
   }
 }
 
-async fn handle_client(mut stream: TcpStream, device: &mut Socket) -> SocketErr<()> {
+async fn handle_client(
+  mut stream: TcpStream,
+  device: &mut Socket,
+  power_status: Arc<AtomicBool>,
+) -> SocketErr<()> {
   // Request
 
   let mut request = [0; 4];
@@ -216,7 +225,7 @@ async fn handle_client(mut stream: TcpStream, device: &mut Socket) -> SocketErr<
   // Response
 
   let data = match &request[..] {
-    b"turnOn" => device.set_status_on(),
+    b"turnOn" => device.set_status_on(power_status.load(order)),
     b"turnOff" => device.set_status_off(),
     b"report" => device.get_report(),
     _ => "ERR".to_string(),
@@ -242,14 +251,17 @@ async fn handle_client(mut stream: TcpStream, device: &mut Socket) -> SocketErr<
 
 #[tokio::main]
 async fn main() -> iced::Result {
-
   let counter = Arc::new(AtomicUsize::new(0));
-  let counter_clone = counter.clone() ;
+  let counter_clone = counter.clone();
+
+  let power_status = Arc::new(AtomicBool::new(false));
+  let power_status_clone = power_status.clone();
   // let power_status = AtomicBool::new(true);
 
   // let rt = Runtime::new().unwrap();
 
-  let srv = tokio::spawn(async move { net(counter_clone.clone()).await });
+  let srv =
+    tokio::spawn(async move { net(counter_clone.clone(), power_status_clone.clone()).await });
 
   // rt.spawn(async {
   //   Model::run(Settings::default());
@@ -263,7 +275,7 @@ async fn main() -> iced::Result {
   Ok(())
 }
 
-async fn net(connection_count: Arc<AtomicUsize>) {
+async fn net(connection_count: Arc<AtomicUsize>, power_status: Arc<AtomicBool>) {
   let mut test_socket: Socket = Socket {
     name: "Socket1",
     about: "Real Socket 1",
@@ -276,8 +288,12 @@ async fn net(connection_count: Arc<AtomicUsize>) {
 
   let listener = TcpListener::bind(test_socket.ip).await.unwrap();
 
+  let power_status_net_clone = power_status.clone();
+
   while let Ok((stream, _addr)) = listener.accept().await {
-    handle_client(stream, &mut test_socket).await.unwrap();
+    let res = handle_client(stream, &mut test_socket, power_status_net_clone.clone())
+      .await
+      .unwrap();
 
     connection_count.fetch_add(1, Ordering::SeqCst);
 
