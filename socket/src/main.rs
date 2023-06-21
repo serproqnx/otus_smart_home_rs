@@ -25,6 +25,7 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
+use std::thread;
 use std::time::Duration;
 // use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -80,15 +81,20 @@ async fn rtrn42() -> i32 {
   42
 }
 
+struct MyFlags {
+  flag1: Arc<AtomicUsize>,
+  flag2: Arc<AtomicBool>,
+}
+
 impl Application for Model {
   type Executor = executor::Default;
   type Message = Message;
   type Theme = Theme;
 
   // type Theme: Default + StyleSheet;
-  type Flags = Arc<AtomicUsize>;
+  type Flags = MyFlags;
 
-  fn new(connection_count: Arc<AtomicUsize>) -> (Model, Command<Message>) {
+  fn new(flags: Self:Flags) -> (Model, Command<Message>) {
     // let counter: Arc<Mutex<i32>> = Arc::new(Mutex::new(1));
     // println!("NEW {}", counter.try_lock().unwrap());
     // drop(counter);
@@ -106,7 +112,7 @@ impl Application for Model {
         on_status: AtomicBool::new(false),
         current_power_consumption: 42,
         ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
-        connection_count,
+        connection_count: 
         counter: Arc::new(Mutex::new(0)),
       },
       Command::none(),
@@ -122,9 +128,14 @@ impl Application for Model {
     match message {
       Message::TurnOn => {
         self.report = "Turned On".to_string();
-        self.status = AtomicBool::new(true);
+        self.status.store(true, Ordering::SeqCst);
+        println!("{}", self.status.load(Ordering::SeqCst));
       }
-      Message::TurnOff => self.report = "Turned Off".to_string(),
+      Message::TurnOff => {
+        self.report = "Turned Off".to_string();
+        self.status.store(false, Ordering::SeqCst);
+        println!("{}", self.status.load(Ordering::SeqCst));
+      }
       Message::Tick => {
         self.count += 1;
       } // Message::ConnectionCount(count) => {
@@ -138,7 +149,8 @@ impl Application for Model {
   fn view(&self) -> Element<Self::Message> {
     Column::new()
       .push(Text::new(format!("Count: {}", self.count)).size(20))
-      .push(Text::new(format!("Status: {}", self.status.load(Ordering::Relaxed))).size(20))
+      .push(Text::new(format!("Report: {}", self.report)).size(20))
+      .push(Text::new(format!("Status: {}", self.status.load(Ordering::SeqCst))).size(20))
       .push(
         Text::new(format!(
           "ConnectionCount: {}",
@@ -193,7 +205,7 @@ impl Socket {
       "Name: {}, About: {}, On_status: {}, current_power_consumption: {}",
       self.name,
       self.about,
-      self.on_status.load(std::sync::atomic::Ordering::SeqCst),
+      self.on_status.load(Ordering::SeqCst),
       self.current_power_consumption,
     )
   }
@@ -225,7 +237,7 @@ async fn handle_client(
   // Response
 
   let data = match &request[..] {
-    b"turnOn" => device.set_status_on(power_status.load(order)),
+    b"turnOn" => device.set_status_on(power_status),
     b"turnOff" => device.set_status_off(),
     b"report" => device.get_report(),
     _ => "ERR".to_string(),
@@ -258,19 +270,33 @@ async fn main() -> iced::Result {
   let power_status_clone = power_status.clone();
   // let power_status = AtomicBool::new(true);
 
+  let settings = iced::Settings {
+    flags: MyFlags {
+      flag1: counter_clone.clone(),
+      flag2: power_status_clone.clone(),
+    },
+    ..iced::Settings::default()
+  };
   // let rt = Runtime::new().unwrap();
 
   let srv =
     tokio::spawn(async move { net(counter_clone.clone(), power_status_clone.clone()).await });
 
+  let test_timer = tokio::spawn(async move {
+    loop {
+      println!("Power status main: {}", power_status.load(Ordering::SeqCst));
+      thread::sleep(Duration::from_secs(2));
+    }
+  });
   // rt.spawn(async {
   //   Model::run(Settings::default());
   // });
 
   // let _ = Model::run(Settings::default());
   // let _ = Model::run(Settings::with_flags(counter));
-  let _ = Model::run(Settings::with_flags(counter));
+  let _ = Model::run(Settings::with_flags((counter, power_status)));
 
+  test_timer.await.unwrap();
   srv.await.unwrap();
   Ok(())
 }
