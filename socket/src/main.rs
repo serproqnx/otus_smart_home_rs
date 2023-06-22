@@ -45,6 +45,7 @@ struct Model {
   pub ip: SocketAddrV4,
   connection_count: Arc<AtomicUsize>,
   counter: Arc<Mutex<i32>>,
+  power_status: Arc<AtomicBool>,
 }
 
 // impl Model {
@@ -77,24 +78,16 @@ enum Message {
   // ConnectionCount(i32),
 }
 
-async fn rtrn42() -> i32 {
-  42
-}
-
-struct MyFlags {
-  flag1: Arc<AtomicUsize>,
-  flag2: Arc<AtomicBool>,
-}
-
 impl Application for Model {
   type Executor = executor::Default;
   type Message = Message;
   type Theme = Theme;
 
   // type Theme: Default + StyleSheet;
-  type Flags = MyFlags;
+  type Flags = (Arc<AtomicUsize>, Arc<AtomicBool>);
 
-  fn new(flags: Self:Flags) -> (Model, Command<Message>) {
+  fn new(flags: (Arc<AtomicUsize>, Arc<AtomicBool>)) -> (Model, Command<Message>) {
+    let (connection_count, power_status) = flags;
     // let counter: Arc<Mutex<i32>> = Arc::new(Mutex::new(1));
     // println!("NEW {}", counter.try_lock().unwrap());
     // drop(counter);
@@ -112,7 +105,8 @@ impl Application for Model {
         on_status: AtomicBool::new(false),
         current_power_consumption: 42,
         ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
-        connection_count: 
+        power_status,
+        connection_count,
         counter: Arc::new(Mutex::new(0)),
       },
       Command::none(),
@@ -129,11 +123,13 @@ impl Application for Model {
       Message::TurnOn => {
         self.report = "Turned On".to_string();
         self.status.store(true, Ordering::SeqCst);
+        self.power_status.store(true, Ordering::SeqCst);
         println!("{}", self.status.load(Ordering::SeqCst));
       }
       Message::TurnOff => {
         self.report = "Turned Off".to_string();
         self.status.store(false, Ordering::SeqCst);
+        self.power_status.store(false, Ordering::SeqCst);
         println!("{}", self.status.load(Ordering::SeqCst));
       }
       Message::Tick => {
@@ -150,6 +146,7 @@ impl Application for Model {
     Column::new()
       .push(Text::new(format!("Count: {}", self.count)).size(20))
       .push(Text::new(format!("Report: {}", self.report)).size(20))
+      .push(Text::new(format!("PWR: {}", self.power_status.load(Ordering::SeqCst))).size(20))
       .push(Text::new(format!("Status: {}", self.status.load(Ordering::SeqCst))).size(20))
       .push(
         Text::new(format!(
@@ -192,11 +189,13 @@ struct Socket {
 impl Socket {
   fn set_status_on(&mut self, status: Arc<AtomicBool>) -> String {
     *self.on_status.get_mut() = true;
+    status.store(true, Ordering::SeqCst);
     "Turned On".to_string()
   }
 
-  fn set_status_off(&mut self) -> String {
+  fn set_status_off(&mut self, status: Arc<AtomicBool>) -> String {
     *self.on_status.get_mut() = false;
+    status.store(false, Ordering::SeqCst);
     "Turned Off".to_string()
   }
 
@@ -208,6 +207,68 @@ impl Socket {
       self.on_status.load(Ordering::SeqCst),
       self.current_power_consumption,
     )
+  }
+}
+
+
+#[tokio::main]
+async fn main() -> iced::Result {
+  let counter = Arc::new(AtomicUsize::new(0));
+  let counter_clone = counter.clone();
+
+  let power_status = Arc::new(AtomicBool::new(false));
+  let power_status_clone = power_status.clone();
+  let power_status_gui_clone = power_status.clone();
+  // let power_status = AtomicBool::new(true);
+
+  let srv =
+    tokio::spawn(async move { net(counter_clone.clone(), power_status_clone.clone()).await });
+
+  let test_timer = tokio::spawn(async move {
+    loop {
+      // println!("Power status main: {:?}", power_status.clone().load(Ordering::SeqCst));
+      thread::sleep(Duration::from_secs(2));
+    }
+  });
+  // rt.spawn(async {
+  //   Model::run(Settings::default());
+  // });
+
+  // let _ = Model::run(Settings::default());
+  // let _ = Model::run(Settings::with_flags(counter));
+  let _ = Model::run(Settings::with_flags((counter, power_status_gui_clone)));
+
+  test_timer.await.unwrap();
+  srv.await.unwrap();
+  Ok(())
+}
+
+async fn net(connection_count: Arc<AtomicUsize>, power_status: Arc<AtomicBool>) {
+  let mut test_socket: Socket = Socket {
+    name: "Socket1",
+    about: "Real Socket 1",
+    on_status: AtomicBool::new(false),
+    current_power_consumption: 42,
+    ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
+  };
+
+  println!("SOCKET: {:?}", test_socket.ip);
+
+  let listener = TcpListener::bind(test_socket.ip).await.unwrap();
+
+  // let power_status_net_clone = power_status.clone();
+
+  while let Ok((stream, _addr)) = listener.accept().await {
+    // let res = handle_client(stream, &mut test_socket, power_status_net_clone.clone())
+    // let res = handle_client(stream, &mut test_socket, power_status.clone())
+    let res = handle_client(stream, &mut test_socket, power_status.clone())
+      .await
+      .unwrap();
+
+    connection_count.fetch_add(1, Ordering::SeqCst);
+
+    // *counter += 1;
+    // drop(counter);
   }
 }
 
@@ -238,7 +299,7 @@ async fn handle_client(
 
   let data = match &request[..] {
     b"turnOn" => device.set_status_on(power_status),
-    b"turnOff" => device.set_status_off(),
+    b"turnOff" => device.set_status_off(power_status),
     b"report" => device.get_report(),
     _ => "ERR".to_string(),
   };
@@ -259,71 +320,4 @@ async fn handle_client(
   println!("Request: {}", String::from_utf8_lossy(&request[..]));
 
   Ok(())
-}
-
-#[tokio::main]
-async fn main() -> iced::Result {
-  let counter = Arc::new(AtomicUsize::new(0));
-  let counter_clone = counter.clone();
-
-  let power_status = Arc::new(AtomicBool::new(false));
-  let power_status_clone = power_status.clone();
-  // let power_status = AtomicBool::new(true);
-
-  let settings = iced::Settings {
-    flags: MyFlags {
-      flag1: counter_clone.clone(),
-      flag2: power_status_clone.clone(),
-    },
-    ..iced::Settings::default()
-  };
-  // let rt = Runtime::new().unwrap();
-
-  let srv =
-    tokio::spawn(async move { net(counter_clone.clone(), power_status_clone.clone()).await });
-
-  let test_timer = tokio::spawn(async move {
-    loop {
-      println!("Power status main: {}", power_status.load(Ordering::SeqCst));
-      thread::sleep(Duration::from_secs(2));
-    }
-  });
-  // rt.spawn(async {
-  //   Model::run(Settings::default());
-  // });
-
-  // let _ = Model::run(Settings::default());
-  // let _ = Model::run(Settings::with_flags(counter));
-  let _ = Model::run(Settings::with_flags((counter, power_status)));
-
-  test_timer.await.unwrap();
-  srv.await.unwrap();
-  Ok(())
-}
-
-async fn net(connection_count: Arc<AtomicUsize>, power_status: Arc<AtomicBool>) {
-  let mut test_socket: Socket = Socket {
-    name: "Socket1",
-    about: "Real Socket 1",
-    on_status: AtomicBool::new(false),
-    current_power_consumption: 42,
-    ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
-  };
-
-  println!("SOCKET: {:?}", test_socket.ip);
-
-  let listener = TcpListener::bind(test_socket.ip).await.unwrap();
-
-  let power_status_net_clone = power_status.clone();
-
-  while let Ok((stream, _addr)) = listener.accept().await {
-    let res = handle_client(stream, &mut test_socket, power_status_net_clone.clone())
-      .await
-      .unwrap();
-
-    connection_count.fetch_add(1, Ordering::SeqCst);
-
-    // *counter += 1;
-    // drop(counter);
-  }
 }
