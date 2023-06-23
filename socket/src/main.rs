@@ -40,7 +40,7 @@ struct Model {
   count: i32,
   pub name: String,
   pub about: String,
-  pub on_status: AtomicBool,
+  // pub on_status: AtomicBool,
   pub current_power_consumption: i32,
   pub ip: SocketAddrV4,
   connection_count: Arc<AtomicUsize>,
@@ -102,7 +102,7 @@ impl Application for Model {
         count: 0,
         name: "Test_name".to_string(),
         about: "Test_about".to_string(),
-        on_status: AtomicBool::new(false),
+        // on_status: AtomicBool::new(false),
         current_power_consumption: 42,
         ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
         power_status,
@@ -121,13 +121,13 @@ impl Application for Model {
   fn update(&mut self, message: Message) -> Command<Message> {
     match message {
       Message::TurnOn => {
-        self.report = "Turned On".to_string();
+        self.report = "On".to_string();
         self.status.store(true, Ordering::SeqCst);
         self.power_status.store(true, Ordering::SeqCst);
         println!("{}", self.status.load(Ordering::SeqCst));
       }
       Message::TurnOff => {
-        self.report = "Turned Off".to_string();
+        self.report = "Off".to_string();
         self.status.store(false, Ordering::SeqCst);
         self.power_status.store(false, Ordering::SeqCst);
         println!("{}", self.status.load(Ordering::SeqCst));
@@ -144,10 +144,11 @@ impl Application for Model {
 
   fn view(&self) -> Element<Self::Message> {
     Column::new()
-      .push(Text::new(format!("Count: {}", self.count)).size(20))
+      .push(Text::new(format!("Name: {}", self.name)).size(20))
+      .push(Text::new(format!("About: {}", self.about)).size(20))
+      .push(Text::new(format!("Power: {}\n", self.current_power_consumption)).size(20))
+      .push(Text::new(format!("Uptime: {}", self.count)).size(20))
       .push(Text::new(format!("Report: {}", self.report)).size(20))
-      .push(Text::new(format!("PWR: {}", self.power_status.load(Ordering::SeqCst))).size(20))
-      .push(Text::new(format!("Status: {}", self.status.load(Ordering::SeqCst))).size(20))
       .push(
         Text::new(format!(
           "ConnectionCount: {}",
