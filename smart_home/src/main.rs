@@ -1,3 +1,5 @@
+use core::time;
+
 use smart_home_lib::homes::{
   home::Home,
   rooms::units::{error::SmartHomeError, unit_builder::UnitBuilder},
@@ -56,9 +58,10 @@ async fn main() -> Result<(), SmartHomeError> {
     .accept(&TurnOnVisitor);
 
   home_1.rooms["kitchen1"].devices["Socket_builder"]
-    .send_cmd("turnOff")
+    .send_cmd("turnOn")
     .await
     .map_err(|e| SmartHomeError::DeviceError(format!("Failed to send command: {}", e)))?;
+
 
   Ok(())
 }

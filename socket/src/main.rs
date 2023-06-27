@@ -1,7 +1,5 @@
 mod error;
 
-// use tokio::sync::Mutex;
-
 use iced::executor;
 use iced::widget::Button;
 use iced::widget::Column;
@@ -22,7 +20,6 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
-use std::thread;
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
@@ -153,32 +150,23 @@ impl Application for Model {
 struct Socket {
   pub name: &'static str,
   pub about: &'static str,
-  pub on_status: Arc<AtomicBool>,
+  pub power_status: Arc<AtomicBool>,
   pub current_power_consumption: Arc<AtomicUsize>,
   pub ip: SocketAddrV4,
 }
 
 impl Socket {
-  fn set_status_on(
-    &mut self,
-    status: Arc<AtomicBool>,
-    current_power_consumption: Arc<AtomicUsize>,
-  ) -> String {
-    self.on_status.store(true, Ordering::SeqCst);
-    current_power_consumption.store(42, Ordering::SeqCst);
-    status.store(true, Ordering::SeqCst);
+  fn set_status_on(&mut self) -> String {
+    self.power_status.store(true, Ordering::SeqCst);
+    self.current_power_consumption.store(42, Ordering::SeqCst);
 
     "Turned On".to_string()
   }
 
-  fn set_status_off(
-    &mut self,
-    status: Arc<AtomicBool>,
-    current_power_consumption: Arc<AtomicUsize>,
-  ) -> String {
-    self.on_status.store(false, Ordering::SeqCst);
-    current_power_consumption.store(0, Ordering::SeqCst);
-    status.store(false, Ordering::SeqCst);
+  fn set_status_off(&mut self) -> String {
+    self.power_status.store(false, Ordering::SeqCst);
+    self.current_power_consumption.store(0, Ordering::SeqCst);
+    // status.store(false, Ordering::SeqCst);
     "Turned Off".to_string()
   }
 
@@ -187,7 +175,7 @@ impl Socket {
       "Name: {}, About: {}, On_status: {}, current_power_consumption: {}",
       self.name,
       self.about,
-      self.on_status.load(Ordering::SeqCst),
+      self.power_status.load(Ordering::SeqCst),
       self.current_power_consumption.load(Ordering::SeqCst),
     )
   }
@@ -198,7 +186,7 @@ async fn main() -> iced::Result {
   let counter = Arc::new(AtomicUsize::new(0));
   let counter_clone = counter.clone();
 
-  let power_consumtion = Arc::new(AtomicUsize::new(42));
+  let power_consumtion = Arc::new(AtomicUsize::new(0));
   let power_consumtion_clone = power_consumtion.clone();
 
   let power_status = Arc::new(AtomicBool::new(false));
@@ -214,19 +202,12 @@ async fn main() -> iced::Result {
     .await
   });
 
-  // let test_timer = tokio::spawn(async move {
-  //   loop {
-  //     thread::sleep(Duration::from_secs(2));
-  //   }
-  // });
-
   let _ = Model::run(Settings::with_flags((
     counter,
     power_status_gui_clone,
     power_consumtion,
   )));
 
-  // test_timer.await.unwrap();
   srv.await.unwrap();
   Ok(())
 }
@@ -239,7 +220,7 @@ async fn net(
   let mut test_socket: Socket = Socket {
     name: "Socket1",
     about: "Real Socket 1",
-    on_status: Arc::new(AtomicBool::new(false)),
+    power_status,
     current_power_consumption,
     ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
   };
@@ -249,9 +230,7 @@ async fn net(
   let listener = TcpListener::bind(test_socket.ip).await.unwrap();
 
   while let Ok((stream, _addr)) = listener.accept().await {
-    handle_client(stream, &mut test_socket)
-      .await
-      .unwrap();
+    handle_client(stream, &mut test_socket).await.unwrap();
 
     connection_count.fetch_add(1, Ordering::SeqCst);
   }
@@ -260,8 +239,8 @@ async fn net(
 async fn handle_client(
   mut stream: TcpStream,
   device: &mut Socket,
-  power_status: Arc<AtomicBool>,
-  current_power_consumption: Arc<AtomicUsize>
+  // power_status: Arc<AtomicBool>,
+  // current_power_consumption: Arc<AtomicUsize>
 ) -> SocketErr<()> {
   // Request
 
@@ -284,8 +263,8 @@ async fn handle_client(
   // Response
 
   let data = match &request[..] {
-    b"turnOn" => device.set_status_on(power_status),
-    b"turnOff" => device.set_status_off(power_status),
+    b"turnOn" => device.set_status_on(),
+    b"turnOff" => device.set_status_off(),
     b"report" => device.get_report(),
     _ => "ERR".to_string(),
   };
