@@ -66,6 +66,7 @@ impl SmartHomeUnit for Socket {
 
   async fn turn_on(&self) -> SHResult<()> {
     self.send_cmd("turnOn").await?;
+    println!("fn turn_on");
     Ok(())
   }
 
@@ -101,6 +102,7 @@ impl SmartHomeUnit for Socket {
     let resp_len = u32::from_be_bytes(device_response);
 
     let mut device_response = vec![0; resp_len as _];
+
     stream
       .read_exact(&mut device_response)
       .await

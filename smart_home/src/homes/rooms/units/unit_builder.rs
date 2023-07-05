@@ -58,7 +58,7 @@ impl UnitBuilder {
     self
   }
 
-  pub fn build(self) -> Box<dyn SmartHomeUnit> {
+  pub fn build(self) -> Box<dyn SmartHomeUnit + Send + Sync> {
     match self.unit_type {
       "socket" => Box::new(Socket {
         name: self.name,

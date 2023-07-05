@@ -12,7 +12,7 @@ use crate::homes::rooms::units::{
 
 pub struct Room {
   pub name: &'static str,
-  pub devices: HashMap<&'static str, Box<dyn SmartHomeUnit>>,
+  pub devices: HashMap<&'static str, Box<dyn SmartHomeUnit + Send + Sync>>,
 }
 
 impl Room {
@@ -23,11 +23,11 @@ impl Room {
     }
   }
 
-  pub fn del_device(&mut self, name: &'static str) -> Option<Box<dyn SmartHomeUnit>> {
+  pub fn del_device(&mut self, name: &'static str) -> Option<Box<dyn SmartHomeUnit + Send + Sync>> {
     self.devices.remove(name)
   }
 
-  pub fn add_device(&mut self, device: Box<dyn SmartHomeUnit>) {
+  pub fn add_device(&mut self, device: Box<dyn SmartHomeUnit + Send + Sync>) {
     self.devices.insert(device.get_name(), device);
   }
 
@@ -54,7 +54,7 @@ impl Room {
     self.devices.insert(name, Box::new(new_socket));
   }
 
-  pub fn get_devices_list(&self) -> &HashMap<&str, Box<dyn SmartHomeUnit>> {
+  pub fn get_devices_list(&self) -> &HashMap<&str, Box<dyn SmartHomeUnit + Send + Sync>> {
     println!("\nСписок устройств в помещении {} :", self.name);
 
     for (_key, device) in self.devices.iter() {
