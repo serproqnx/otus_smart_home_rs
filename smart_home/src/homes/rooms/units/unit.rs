@@ -5,29 +5,30 @@ use tokio::net::TcpStream;
 use super::unit_visitor::Visitor;
 use crate::homes::rooms::units::error::{SHResult, SmartHomeError};
 use crate::homes::rooms::units::{socket::Socket, thermometer::Thermometer};
+use std::fmt::Debug;
 use std::net::UdpSocket;
 
 #[async_trait]
-pub trait SmartHomeUnit {
-  fn get_name(&self) -> &'static str;
+pub trait SmartHomeUnit: Debug + Send + Sync {
+  fn get_name(&self) -> String;
   fn get_bool_on_status(&self) -> bool;
   fn turn_on_off(&mut self);
-  fn get_about(&self) -> &'static str;
+  fn get_about(&self) -> String;
   fn get_on_status(&self) -> &'static str;
   fn get_device_report(&self) -> Option<String>;
 
   async fn turn_on(&self) -> SHResult<()>;
   async fn turn_off(&self) -> SHResult<()>;
-  async fn send_cmd(&self, cmd: &'static str) -> SHResult<()>;
-  async fn get_report(&self) -> SHResult<()>;
+  async fn send_cmd(&self, cmd: &'static str) -> SHResult<String>;
+  async fn get_report(&self) -> SHResult<String>;
 
   fn accept(&mut self, v: &dyn Visitor);
 }
 
 #[async_trait]
 impl SmartHomeUnit for Socket {
-  fn get_name(&self) -> &'static str {
-    self.name
+  fn get_name(&self) -> String {
+    self.name.clone()
   }
 
   fn get_bool_on_status(&self) -> bool {
@@ -39,9 +40,9 @@ impl SmartHomeUnit for Socket {
     println!("{} turned {}", self.name, self.get_on_status());
   }
 
-  fn get_about(&self) -> &'static str {
+  fn get_about(&self) -> String {
     println!("About socket builder: {}", self.about);
-    self.about
+    self.about.clone()
   }
 
   fn get_on_status(&self) -> &'static str {
@@ -75,7 +76,7 @@ impl SmartHomeUnit for Socket {
     Ok(())
   }
 
-  async fn send_cmd(&self, cmd: &'static str) -> SHResult<()> {
+  async fn send_cmd(&self, cmd: &'static str) -> SHResult<String> {
     let mut stream = TcpStream::connect(self.ip)
       .await
       .map_err(SmartHomeError::TcpStreamError)?;
@@ -102,19 +103,20 @@ impl SmartHomeUnit for Socket {
     let resp_len = u32::from_be_bytes(device_response);
 
     let mut device_response = vec![0; resp_len as _];
-
     stream
       .read_exact(&mut device_response)
       .await
       .map_err(SmartHomeError::TcpStreamError)?;
-    println!("Response: {}", String::from_utf8_lossy(&device_response));
 
-    Ok(())
+    let response: String = String::from_utf8_lossy(&device_response).to_string();
+
+    println!("Response: {}", &response);
+
+    Ok(response)
   }
 
-  async fn get_report(&self) -> SHResult<()> {
-    self.send_cmd("report").await?;
-    Ok(())
+  async fn get_report(&self) -> SHResult<String> {
+    Ok(self.send_cmd("report").await?)
   }
 
   fn accept(&mut self, v: &dyn Visitor) {
@@ -124,8 +126,8 @@ impl SmartHomeUnit for Socket {
 
 #[async_trait]
 impl SmartHomeUnit for Thermometer {
-  fn get_name(&self) -> &'static str {
-    self.name
+  fn get_name(&self) -> String {
+    self.name.clone()
   }
 
   fn get_bool_on_status(&self) -> bool {
@@ -137,9 +139,9 @@ impl SmartHomeUnit for Thermometer {
     println!("{} turned {}", self.name, self.get_on_status());
   }
 
-  fn get_about(&self) -> &'static str {
+  fn get_about(&self) -> String {
     // println!("{}", self.about);
-    self.about
+    self.about.clone()
   }
 
   fn get_on_status(&self) -> &'static str {
@@ -170,7 +172,7 @@ impl SmartHomeUnit for Thermometer {
     Ok(())
   }
 
-  async fn send_cmd(&self, _cmd: &'static str) -> SHResult<()> {
+  async fn send_cmd(&self, _cmd: &'static str) -> SHResult<String> {
     // let socket = UdpSocket::bind("127.0.0.1:34254").expect("couldn't bind to adress");
     let socket = UdpSocket::bind("127.0.0.1:34254").expect("couldn't bind to adress");
 
@@ -186,13 +188,14 @@ impl SmartHomeUnit for Thermometer {
     let buf = &mut buf[..amt];
     let temp_from_bytes = i32::from_be_bytes(buf.try_into().expect("it's not temp"));
 
-    println!("Addr: {:?}, Temp: {:?}", &src_addr, &temp_from_bytes);
-
-    Ok(())
+    // println!("Addr: {:?}, Temp: {:?}", &src_addr, &temp_from_bytes);
+    let response = format!("Addr: {:?}, Temp: {:?}", &src_addr, &temp_from_bytes);
+    println!("{}", &response);
+    Ok(response)
   }
 
-  async fn get_report(&self) -> SHResult<()> {
-    Ok(())
+  async fn get_report(&self) -> SHResult<String> {
+    Ok("Report".to_string())
   }
 
   fn accept(&mut self, v: &dyn Visitor) {
@@ -208,9 +211,9 @@ mod tests {
   #[test]
   fn create_smarthomeunit_socket() {
     let mut new_socket = Socket {
-      name: "1",
+      name: "1".to_string(),
       on_status: true,
-      about: "1",
+      about: "1".to_string(),
       current_power_consumption: 1,
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };
@@ -236,9 +239,9 @@ mod tests {
   #[test]
   fn create_smarthomeunit_thermometer() {
     let mut new_therm = Thermometer {
-      name: "1",
+      name: "1".to_string(),
       on_status: true,
-      about: "1",
+      about: "1".to_string(),
       current_temperature: 1,
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8181),
     };

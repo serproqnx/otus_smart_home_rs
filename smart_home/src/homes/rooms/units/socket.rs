@@ -4,8 +4,8 @@ use super::unit_builder::UnitBuilder;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Socket {
-  pub name: &'static str,
-  pub about: &'static str,
+  pub name: String,
+  pub about: String,
   pub on_status: bool,
   pub current_power_consumption: i32,
   pub ip: SocketAddrV4,
@@ -29,8 +29,8 @@ mod tests {
   #[test]
   fn create_socket() {
     let test_socket: Socket = Socket {
-      name: "1",
-      about: "1",
+      name: "1".to_string(),
+      about: "1".to_string(),
       on_status: true,
       current_power_consumption: 21,
       ip: SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 8182),

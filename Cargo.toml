@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+  "api_client",
 	"smart_home",
 	"socket",
   "thermometer",
