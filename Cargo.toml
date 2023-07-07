@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+  "c_socket",
   "api_client",
 	"smart_home",
 	"socket",
